@@ -1,0 +1,12 @@
+node_modules/
+server/.env
+server/.env.*
+!server/.env.example
+client/.env
+client/.env.*
+!client/.env.example
+server/backups/
+*.archive.gz
+*.archive.gz.sha256
+client/dist/
+*.log

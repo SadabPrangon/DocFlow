@@ -1,0 +1,12 @@
+const express = require('express');
+const { protect, authorize } = require('../middleware/auth');
+const c = require('../controllers/clinicalController');
+const router = express.Router(); router.use(protect);
+router.get('/history/mine', authorize('patient'), c.myHistory);
+router.get('/history/patient/:patientId', authorize('doctor'), c.myHistory);
+router.get('/appointments/:appointmentId', authorize('patient', 'doctor'), c.appointmentClinical);
+router.put('/appointments/:appointmentId/record', authorize('doctor'), c.upsertRecord);
+router.put('/appointments/:appointmentId/prescription', authorize('doctor'), c.upsertPrescription);
+router.get('/appointments/:appointmentId/messages', authorize('patient', 'doctor'), c.messages);
+router.post('/appointments/:appointmentId/messages', authorize('patient', 'doctor'), c.sendMessage);
+module.exports = router;

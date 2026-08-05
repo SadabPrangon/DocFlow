@@ -1,0 +1,10 @@
+1. Open this folder in VS Code.
+2. Copy server/.env.example to server/.env.
+3. Put your MongoDB URI and JWT secret in server/.env.
+4. Prefer a new database name: docflow_complete.
+5. Terminal 1: cd server && npm install && npm run seed && npm run dev
+6. Terminal 2: cd client && npm install && npm run dev
+7. Open http://localhost:5173
+8. Admin login: admin@docflow.com / Admin123
+
+Your original uploaded project was not modified. This is a separate completed copy.
