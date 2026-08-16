@@ -58,7 +58,9 @@
 
 ## Payments and SMS configuration
 
+- SSLCommerz hosted checkout requires `SSLCOMMERZ_STORE_ID`, `SSLCOMMERZ_STORE_PASSWORD`, `SSLCOMMERZ_SANDBOX`, `PAYMENT_CURRENCY`, `CLIENT_URL`, and `SERVER_PUBLIC_URL`. When these are set they take priority over Stripe. Register the IPN URL as `SERVER_PUBLIC_URL/api/payments/sslcommerz/ipn` in the merchant panel; `SERVER_PUBLIC_URL` must be an internet-reachable HTTPS origin or IPN will never be delivered.
 - Stripe Checkout requires `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CLIENT_URL`, and `PAYMENT_CURRENCY`. Configure the webhook URL as `/api/payments/webhook` and subscribe to `checkout.session.completed` and `checkout.session.expired`.
-- Never mark a payment paid from a browser redirect. DocFlow updates payment state only from a verified Stripe webhook.
+- Never mark a payment paid from a browser redirect. DocFlow updates payment state only from a verified Stripe webhook, or for SSLCommerz from a server-to-server `val_id` validation call whose reported amount and currency must match the stored payment.
+- SSLCommerz settlement is idempotent on `val_id` and runs identically from the browser return and the IPN, so a duplicate or replayed callback cannot double-credit an appointment. Transactions the gateway marks `risk_level=1` are still recorded as paid but logged as `payment_risk_flagged` for manual review.
 - Twilio reminders require `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and either `TWILIO_FROM_NUMBER` or `TWILIO_MESSAGING_SERVICE_SID`.
 - Patient phone numbers used for SMS must be stored in E.164 international format. Obtain required messaging consent and sender registration for every deployment country.

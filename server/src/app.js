@@ -6,6 +6,7 @@ const appointmentRoutes = require('../routes/appointmentRoutes');
 const notificationRoutes = require('../routes/notificationRoutes');
 const clinicalRoutes = require('../routes/clinicalRoutes');
 const paymentRoutes = require('../routes/paymentRoutes');
+const sslcommerzRoutes = require('../routes/sslcommerzRoutes');
 const paymentController = require('../controllers/paymentController');
 const mongoose = require('mongoose');
 const { corsOrigins, jsonLimit } = require('../config');
@@ -29,6 +30,7 @@ app.use(cors({
 }));
 app.use(operations.createRateLimiter({ windowMs: 15 * 60 * 1000, limit: Number(process.env.API_RATE_LIMIT) || 300, keyPrefix: 'api' }));
 app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), paymentController.webhook);
+app.use('/api/payments/sslcommerz', express.urlencoded({ extended: false, limit: jsonLimit() }), sslcommerzRoutes);
 app.use(express.json({ limit: jsonLimit() }));
 app.get('/', (req, res) => res.json({ success: true, message: 'DocFlow API is running' }));
 app.get('/api/health/live', (req, res) => res.json({ success: true, status: 'live', uptimeSeconds: Math.floor(process.uptime()) }));

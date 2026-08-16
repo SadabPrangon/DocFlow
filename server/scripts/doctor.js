@@ -11,4 +11,10 @@ const dump = spawnSync('mongodump', ['--version'], { encoding: 'utf8', shell: fa
 report(!dump.error && dump.status === 0, 'MongoDB database tools', dump.error ? 'mongodump is not installed' : String(dump.stdout).split('\n')[0]);
 report(Boolean(process.env.METRICS_TOKEN) || process.env.NODE_ENV !== 'production', 'Metrics access token', process.env.METRICS_TOKEN ? 'configured' : 'required in production');
 report(Boolean(process.env.SMTP_HOST || (process.env.EMAIL_USER && process.env.EMAIL_PASS)), 'Email provider', 'required for OTP and email reminders');
+const sslcommerz = require('../lib/sslcommerz');
+const provider = sslcommerz.isConfigured() ? `sslcommerz (${sslcommerz.sandbox() ? 'sandbox' : 'live'})` : process.env.STRIPE_SECRET_KEY ? 'stripe' : '';
+report(Boolean(provider), 'Online payment provider', provider || 'none configured; online checkout returns 503');
+const callbackHost = String(process.env.SERVER_PUBLIC_URL || '');
+const localCallback = !callbackHost || /localhost|127\.0\.0\.1/i.test(callbackHost);
+if (sslcommerz.isConfigured()) report(!(localCallback && process.env.NODE_ENV === 'production'), 'SSLCommerz callback URL', localCallback ? `${callbackHost || 'unset'} - the gateway cannot reach this from the internet, so IPN will not deliver` : callbackHost);
 if (failed) process.exitCode = 1;

@@ -12,6 +12,8 @@ delete process.env.EMAIL_PASS;
 delete process.env.SMTP_HOST;
 delete process.env.STRIPE_SECRET_KEY;
 delete process.env.STRIPE_WEBHOOK_SECRET;
+delete process.env.SSLCOMMERZ_STORE_ID;
+delete process.env.SSLCOMMERZ_STORE_PASSWORD;
 delete process.env.TWILIO_ACCOUNT_SID;
 delete process.env.TWILIO_AUTH_TOKEN;
 
@@ -462,7 +464,14 @@ async function run() {
     response=await call(`/api/appointments/${scheduleId}/reassign`,{method:'PUT',token:sessions.receptionist,body:{doctorId:String(doctor1._id)}});
     check(response.status===200&&String(response.data.appointment.doctor)===String(doctor1._id)&&response.data.appointment.status==='Pending','Receptionist safely reassigns an appointment to an available doctor');
     response=await call(`/api/payments/appointments/${scheduleId}/checkout`,{method:'POST',token:sessions.patient4});
-    check(response.status===503,'Online checkout fails safely when Stripe credentials are absent');
+    check(response.status===503,'Online checkout fails safely when no gateway credentials are present');
+    const gatewayPost=(path,fields)=>fetch(`${base}${path}`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(fields),redirect:'manual'});
+    let gateway=await gatewayPost('/api/payments/sslcommerz/success',{tran_id:'DFforged',status:'VALID',amount:'650.00'});
+    check(gateway.status===303&&String(gateway.headers.get('location')).includes('status=failed'),'SSLCommerz success callback without a valid val_id cannot mark an appointment paid',`status ${gateway.status}`);
+    gateway=await gatewayPost('/api/payments/sslcommerz/ipn',{tran_id:'DFforged'});
+    check(gateway.status===400,'SSLCommerz IPN rejects a callback with no val_id to validate',`status ${gateway.status}`);
+    gateway=await gatewayPost('/api/payments/sslcommerz/cancel',{tran_id:'DFforged'});
+    check(gateway.status===303&&String(gateway.headers.get('location')).includes('status=cancelled'),'SSLCommerz cancel callback returns the patient to the payments page');
     response=await call('/api/payments/mine',{token:sessions.patient4});
     check(response.status===200&&Array.isArray(response.data.payments),'Patient payment history endpoint loads');
 
