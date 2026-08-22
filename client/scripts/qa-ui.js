@@ -25,6 +25,8 @@ async function mockApi(page) {
     else if (path.includes('/payments/mine')) body = { success:true, payments:[] };
     else if (path.includes('/appointments/reports/summary')) body = { success:true, report:{byStatus:[],byDoctor:[],revenue:{total:0,count:0}} };
     else if (path.includes('/auth/me')) body = { success:true, user:{name:'QA Doctor',email:'doctor@qa.test',role:'doctor',availability:{weekly:[],overrides:[]}} };
+    else if (path.includes('/ai/conversations')) body = { success:true, conversations:[] };
+    else if (path.includes('/ai/recommend')) body = { success:true, conversationId:'conv-1', title:'skin rash', source:'qa', urgent:false, specialty:'Dermatology', reply:'You should see a Dermatology doctor for a spreading rash.', recommendations:[{doctorId:'doctor-1',name:'Dr QA',specialty:'Dermatology',location:'QA Clinic',fee:500,date:'2026-08-24',day:'Monday',time:'9:00 AM',why:'Earliest dermatology slot.'}] };
     else if (path.includes('/notifications')) body = { success:true, notifications:[], unread:0 };
     else if (path.includes('/users/admin/stats')) body = { success:true, stats:{patients:2,doctors:2,receptionists:1,appointments:3} };
     else if (path.includes('/users/admin/users')) body = { success:true, users:[] };
@@ -126,9 +128,11 @@ async function run() {
 
     await page.evaluate(()=>{localStorage.setItem('user',JSON.stringify({name:'QA Patient',email:'patient@qa.test',role:'patient'}));history.pushState({},'', '/ai-recommendation');dispatchEvent(new PopStateEvent('popstate'))});
     await page.waitForTimeout(300);
-    await page.getByPlaceholder('Describe symptoms...').fill('I have a skin rash');
-    await page.getByRole('button',{name:'Get Recommendation'}).click();
-    check(await page.getByRole('heading',{name:'Dermatology'}).isVisible(), 'Care assistant maps skin rash to Dermatology');
+    await page.getByPlaceholder('Describe your symptoms...').fill('I have a skin rash');
+    await page.getByRole('button',{name:'Send message'}).click();
+    await page.waitForSelector('.doc-card',{timeout:15000});
+    check((await page.locator('.doc-card').first().innerText()).includes('Dermatology'), 'Care assistant returns a bookable dermatology card', (await page.locator('.chat-scroll').innerText()).slice(0,200));
+    check(await page.locator('.doc-card-book').first().isVisible(), 'Care assistant card offers a booking link');
 
     const mobile = await browser.newContext({ viewport:{width:390,height:844} });
     const mobilePage = await mobile.newPage(); await mockApi(mobilePage);
