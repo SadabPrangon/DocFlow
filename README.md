@@ -117,4 +117,22 @@ Use `npm run doctor` in `server` to validate required configuration and MongoDB 
 
 ## AI note
 
-The current AI recommendation is a rule-based placeholder. Ollama integration is intentionally left for the final AI stage.
+The care assistant now runs a local Ollama model with deterministic keyword routing as a fallback. See the Care assistant section above.
+
+## Care assistant
+
+The patient care assistant runs a local [Ollama](https://ollama.com) model, so symptom
+text never leaves the host. Install Ollama, then:
+
+```bash
+ollama pull llama3.2:3b
+```
+
+Configure `OLLAMA_HOST` and `OLLAMA_MODEL` in `server/.env`. If Ollama is unreachable the
+assistant degrades to deterministic keyword routing rather than failing; `npm run doctor`
+reports which mode is active.
+
+The model only ever proposes: every doctor, slot, fee, day and time a patient sees is
+validated against the database before it is shown. `npm run qa:ai` runs scripted
+conversations and asserts those invariants (`QA_AI_RUNS=3` for repeat passes, since the
+model is non-deterministic). CI runs the same suite in fallback mode.

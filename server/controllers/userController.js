@@ -4,6 +4,7 @@ const Appointment = require('../models/Appointment');
 const AuditLog = require('../models/AuditLog');
 const EmailChangeOtp = require('../models/EmailChangeOtp');
 const AuthSession = require('../models/AuthSession');
+const AiConversation = require('../models/AiConversation');
 const crypto = require('crypto');
 const { sendSecurityOtp } = require('../lib/mailer');
 const { publicUser } = require('./authController');
@@ -222,6 +223,8 @@ const deleteMyAccount = async (req, res) => {
   const originalId = user._id;
   user.name = 'Deleted user'; user.email = `deleted-${user._id}-${Date.now()}@redacted.docflow.local`; user.phone = ''; user.address = ''; user.gender = ''; user.isActive = false; user.tokenVersion += 1;
   await user.save(); await AuthSession.updateMany({ user: user._id, revokedAt: null }, { revokedAt: new Date() });
+  // Assistant chats are not clinical records, so they go with the account.
+  await AiConversation.deleteMany({ user: user._id });
   await audit(req, 'account.deleted', 'User', originalId, { retainedRecords: 'Appointments retained under healthcare record policy' });
   res.json({ success: true, message: 'Account access and personal profile data were removed. Clinical records remain retained as required.' });
 };

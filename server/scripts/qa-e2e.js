@@ -12,6 +12,7 @@ delete process.env.EMAIL_PASS;
 delete process.env.SMTP_HOST;
 delete process.env.STRIPE_SECRET_KEY;
 delete process.env.STRIPE_WEBHOOK_SECRET;
+process.env.AI_ASSISTANT="false";
 delete process.env.SSLCOMMERZ_STORE_ID;
 delete process.env.SSLCOMMERZ_STORE_PASSWORD;
 delete process.env.TWILIO_ACCOUNT_SID;

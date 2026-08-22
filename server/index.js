@@ -47,12 +47,14 @@ mongoose.connect(process.env.MONGODB_URI)
       require('./models/Message').init(),
       require('./models/Payment').init(),
       require('./models/PaymentEvent').init(),
+      require('./models/AiConversation').init(),
     ]);
     console.log('MongoDB Connected');
     server = app.listen(PORT, () => {
       operations.setReady(true);
       console.log(`Server running on http://localhost:${PORT}`);
       reminderService.startReminderWorker();
+      require("./lib/ollama").warm().then((ok) => console.log(ok ? "Care assistant model warmed" : "Care assistant model unavailable; keyword fallback in use"));
     });
   })
   .catch((error) => {

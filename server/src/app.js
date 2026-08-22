@@ -7,6 +7,7 @@ const notificationRoutes = require('../routes/notificationRoutes');
 const clinicalRoutes = require('../routes/clinicalRoutes');
 const paymentRoutes = require('../routes/paymentRoutes');
 const sslcommerzRoutes = require('../routes/sslcommerzRoutes');
+const aiRoutes = require('../routes/aiRoutes');
 const paymentController = require('../controllers/paymentController');
 const mongoose = require('mongoose');
 const { corsOrigins, jsonLimit } = require('../config');
@@ -57,6 +58,7 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/clinical', clinicalRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/ai', aiRoutes);
 app.use((req, res) => res.status(404).json({ success: false, message: 'API route not found.', requestId: req.id }));
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);

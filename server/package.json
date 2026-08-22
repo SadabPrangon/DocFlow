@@ -12,7 +12,8 @@
     "restore": "node scripts/restore.js",
     "backup:verify": "node scripts/verify-backup.js",
     "backup:cleanup": "node scripts/cleanup-backups.js",
-    "doctor": "node scripts/doctor.js"
+    "doctor": "node scripts/doctor.js",
+    "qa:ai": "node scripts/qa-ai.js"
   },
   "keywords": [],
   "author": "",

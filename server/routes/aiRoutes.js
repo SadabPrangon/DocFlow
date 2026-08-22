@@ -1,0 +1,11 @@
+const express = require('express');
+const { protect, authorize } = require('../middleware/auth');
+const c = require('../controllers/aiController');
+const router = express.Router();
+router.use(protect);
+router.get('/status', c.status);
+router.post('/recommend', authorize('patient'), c.recommend);
+router.get('/conversations', authorize('patient'), c.listConversations);
+router.get('/conversations/:id', authorize('patient'), c.getConversation);
+router.delete('/conversations/:id', authorize('patient'), c.deleteConversation);
+module.exports = router;

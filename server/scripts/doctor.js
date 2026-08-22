@@ -17,4 +17,9 @@ report(Boolean(provider), 'Online payment provider', provider || 'none configure
 const callbackHost = String(process.env.SERVER_PUBLIC_URL || '');
 const localCallback = !callbackHost || /localhost|127\.0\.0\.1/i.test(callbackHost);
 if (sslcommerz.isConfigured()) report(!(localCallback && process.env.NODE_ENV === 'production'), 'SSLCommerz callback URL', localCallback ? `${callbackHost || 'unset'} - the gateway cannot reach this from the internet, so IPN will not deliver` : callbackHost);
-if (failed) process.exitCode = 1;
+const ollama = require("../lib/ollama");
+ollama.isAvailable().then((ready) => {
+  report(true, "Care assistant", ollama.enabled() ? (ready ? `ollama ready (${ollama.model()})` : `${ollama.model()} unreachable at ${ollama.host()}; keyword fallback in use`) : "disabled by AI_ASSISTANT=false");
+  if (failed) process.exitCode = 1;
+});
+

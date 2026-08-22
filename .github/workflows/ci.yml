@@ -28,6 +28,11 @@ jobs:
         working-directory: server
       - run: npm run qa
         working-directory: server
+      - name: Care assistant invariants (deterministic fallback, no model needed)
+        run: npm run qa:ai
+        working-directory: server
+        env:
+          AI_ASSISTANT: "false"
       - run: npm audit --omit=dev --audit-level=critical
         working-directory: server
       - run: npm ci
