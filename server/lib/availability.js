@@ -47,4 +47,19 @@ const availableSlots = async (doctor, date, excludeId = null) => {
   return slots.filter((slot) => !booked.includes(slot));
 };
 
-module.exports = { LEGACY_SLOTS, validDate, today, scheduleSlots, availableSlots, appointmentDateTime };
+// The patient does not choose a time. The serial is their place in the day's
+// grid, and the time follows from it: the doctor's start plus one consultation
+// length per patient ahead of them.
+const nextAssignment = async (doctor, date, excludeId = null) => {
+  const slots = scheduleSlots(doctor, date);
+  if (!slots.length) return null;
+  const filter = { doctor: doctor._id, appointmentDate: date, status: { $in: ['Pending', 'Approved'] } };
+  if (excludeId) filter._id = { $ne: excludeId };
+  const booked = await Appointment.distinct('appointmentTime', filter);
+  // The first free place, so a cancellation ahead of you moves you up rather
+  // than leaving a hole in the day.
+  const index = slots.findIndex((slot) => !booked.includes(slot));
+  return index < 0 ? null : { serial: index + 1, time: slots[index], of: slots.length };
+};
+
+module.exports = { LEGACY_SLOTS, validDate, today, scheduleSlots, availableSlots, nextAssignment, appointmentDateTime };

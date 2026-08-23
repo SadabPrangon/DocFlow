@@ -8,7 +8,7 @@ const AiConversation = require('../models/AiConversation');
 const crypto = require('crypto');
 const { sendSecurityOtp } = require('../lib/mailer');
 const { publicUser } = require('./authController');
-const { availableSlots, validDate, today } = require('../lib/availability');
+const { availableSlots, nextAssignment, validDate, today } = require('../lib/availability');
 const { audit } = require('../lib/activity');
 const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const strongPassword = (password) => typeof password === 'string' && password.length >= 8 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password);
@@ -145,7 +145,8 @@ const doctorAvailability = async (req, res) => {
     const doctor = await User.findOne({ _id: req.params.id, role: 'doctor', isActive: true });
     if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found.' });
     const slots = await availableSlots(doctor, date);
-    res.json({ success: true, date, timezone: doctor.availability?.timezone || 'Asia/Dhaka', slots });
+    const next = await nextAssignment(doctor, date);
+    res.json({ success: true, date, timezone: doctor.availability?.timezone || 'Asia/Dhaka', slots, next });
   } catch (error) {
     if (error.name === 'CastError') return res.status(400).json({ success: false, message: 'Invalid doctor ID.' });
     res.status(500).json({ success: false, message: 'Unable to load availability.' });

@@ -27,6 +27,7 @@ async function mockApi(page) {
     else if (path.includes('/clinical/history/mine')) body = { success:true, records:[], prescriptions:[] };
     else if (path.includes('/payments/mine')) body = { success:true, payments:[] };
     else if (path.includes('/appointments/reports/summary')) body = { success:true, report:{byStatus:[],byDoctor:[],revenue:{total:0,count:0}} };
+    else if (path.includes('/availability')) body = { success:true, date:'2026-08-26', timezone:'Asia/Dhaka', slots:[], next:{serial:2,time:'7:05 PM',of:24} };
     else if (path.includes('/users/me/availability')) body = { success:true, message:'Availability updated.', availability:{timezone:'Asia/Dhaka',slotDuration:45,weekly:Array.from({length:7},(_,day)=>({day,enabled:day>0&&day<6,start:'09:00',end:'17:00'})),unavailableDates:[],overrides:[]} };
     else if (path.includes('/auth/me')) body = { success:true, user:{name:'QA Doctor',email:'doctor@qa.test',role:'doctor',availability:{weekly:[],overrides:[]}} };
     else if (path.includes('/ai/conversations')) body = { success:true, conversations:[] };
@@ -134,6 +135,16 @@ async function run() {
     await page.locator('.rowmenu-item',{hasText:'Reschedule'}).click();
     check(await page.locator('.rowmenu-list').count()===0, 'Choosing an action closes the dots menu');
     check(await page.locator('.tbl-edit td').getAttribute('colspan')==='5', 'Reschedule opens a row spanning the whole table');
+    await page.goto(`${BASE}/book-appointment/doctor-1`,{waitUntil:'networkidle'});
+    await page.waitForSelector('.serial');
+    check((await page.locator('.serial').innerText()).includes('Choose a date'), 'Booking asks for a date before it can work out a serial', await page.locator('.serial').innerText());
+    check(await page.getByRole('button',{name:/Confirm/}).isDisabled(), 'Booking cannot be confirmed without a serial');
+    await page.locator('input[type=date]').fill('2026-08-26');
+    await page.waitForTimeout(400);
+    const serialCard=(await page.locator('.serial').innerText()).replace(/s+/g,' ');
+    check(serialCard.includes('#2')&&serialCard.includes('7:05 PM'), 'Booking shows the serial and the time the system worked out', serialCard);
+    check(await page.locator('form select').count()===1, 'The patient is not offered a time to pick', String(await page.locator('form select').count()));
+    check(!(await page.getByRole('button',{name:/Confirm/}).isDisabled()), 'A date with a free place enables the booking');
     await page.goto(`${BASE}/medical-records`,{waitUntil:'networkidle'});
     check((await page.locator('.app-topbar h2').innerText()).trim()==='Medical Records', 'Medical-record workspace renders');
     await page.goto(`${BASE}/payments`,{waitUntil:'networkidle'});

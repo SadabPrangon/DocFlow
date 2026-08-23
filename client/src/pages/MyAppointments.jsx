@@ -28,18 +28,18 @@ export default function MyAppointments() {
   const [items, setItems] = useState([]);
   const [msg, setMsg] = useState('');
   const [editing, setEditing] = useState(null);
-  const [slots, setSlots] = useState([]);
-  const [form, setForm] = useState({ appointmentDate: '', appointmentTime: '' });
+  const [next, setNext] = useState(null);
+  const [form, setForm] = useState({ appointmentDate: '' });
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('');
   const [sort, setSort] = useState('soonest');
   const load = () => api.get('/appointments/mine').then((r) => setItems(r.data.appointments));
   useEffect(() => { load(); }, []);
   useEffect(() => {
-    if (!editing || !form.appointmentDate) return setSlots([]);
+    if (!editing || !form.appointmentDate) return setNext(null);
     const appointment = items.find((item) => item._id === editing);
     const doctorId = appointment?.doctor?._id || appointment?.doctor;
-    api.get(`/users/doctors/${doctorId}/availability`, { params: { date: form.appointmentDate } }).then((r) => setSlots(r.data.slots)).catch(() => setSlots([]));
+    api.get(`/users/doctors/${doctorId}/availability`, { params: { date: form.appointmentDate } }).then((r) => setNext(r.data.next)).catch(() => setNext(null));
   }, [editing, form.appointmentDate, items]);
   const cancel = async (id) => {
     if (!confirm('Cancel this appointment?')) return;
@@ -129,7 +129,7 @@ export default function MyAppointments() {
                   <td className="tbl-end">
                     <RowMenu label={`Actions for the ${appointment.appointmentDate} appointment with ${appointment.doctorName}`} items={[
                       ...(queueable ? [{ label: 'Live queue', icon: <Radio size={14}/>, to: `/live-queue/${appointment._id}` }] : []),
-                      ...(changeable ? [{ label: 'Reschedule', icon: <CalendarClock size={14}/>, onClick: () => { setEditing(editing === appointment._id ? null : appointment._id); setForm({ appointmentDate: '', appointmentTime: '' }); } }] : []),
+                      ...(changeable ? [{ label: 'Reschedule', icon: <CalendarClock size={14}/>, onClick: () => { setEditing(editing === appointment._id ? null : appointment._id); setForm({ appointmentDate: '' }); } }] : []),
                       ...(changeable ? [{ label: 'Cancel', icon: <XCircle size={14}/>, tone: 'danger', onClick: () => cancel(appointment._id) }] : []),
                     ]}/>
                   </td>
@@ -139,15 +139,10 @@ export default function MyAppointments() {
                   <td colSpan={5}>
                     <form onSubmit={reschedule} className="tbl-form">
                       <label>New date
-                        <input required min={localDate()} type="date" value={form.appointmentDate} onChange={(event) => setForm({ appointmentDate: event.target.value, appointmentTime: '' })}/>
+                        <input required min={localDate()} type="date" value={form.appointmentDate} onChange={(event) => setForm({ appointmentDate: event.target.value })}/>
                       </label>
-                      <label>New time
-                        <select required value={form.appointmentTime} onChange={(event) => setForm({ ...form, appointmentTime: event.target.value })}>
-                          <option value="">Select available time</option>
-                          {slots.map((time) => <option key={time}>{time}</option>)}
-                        </select>
-                      </label>
-                      <button className="tbl-act primary">Save</button>
+                      <span className="tbl-serial">{!form.appointmentDate ? 'Pick a date to see your new serial.' : next ? `Serial #${next.serial}, at about ${next.time}.` : 'Fully booked that date.'}</span>
+                      <button className="tbl-act primary" disabled={!next}>Save</button>
                       <button type="button" className="tbl-act" onClick={() => setEditing(null)}>Close</button>
                     </form>
                   </td>

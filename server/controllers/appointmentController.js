@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Appointment = require('../models/Appointment');
 const User = require('../models/User');
 const QueueState = require('../models/QueueState');
-const { availableSlots, validDate, today, appointmentDateTime } = require('../lib/availability');
+const { nextAssignment, validDate, today, appointmentDateTime } = require('../lib/availability');
 const { notify, audit } = require('../lib/activity');
 const { runDueReminders } = require('../services/reminderService');
 
@@ -48,17 +48,20 @@ const enrichQueue = async (appointment) => {
 
 const createAppointment = async (req, res) => {
   try {
-    const { doctorId, appointmentDate, appointmentTime, reason, paymentMethod = 'cash' } = req.body;
+    const { doctorId, appointmentDate, reason, paymentMethod = 'cash' } = req.body;
     if (!validId(doctorId)) return res.status(400).json({ success: false, message: 'Invalid doctor ID.' });
     const doctor = await User.findOne({ _id: doctorId, role: 'doctor', isActive: true });
     if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found.' });
     if (!validDate(appointmentDate) || appointmentDate < today()) return res.status(400).json({ success: false, message: 'Choose today or a future valid date.' });
-    if (typeof appointmentTime !== 'string' || typeof reason !== 'string' || !appointmentTime.trim() || !reason.trim()) return res.status(400).json({ success: false, message: 'Date, time and reason are required.' });
+    if (typeof reason !== 'string' || !reason.trim()) return res.status(400).json({ success: false, message: 'Date and reason are required.' });
     if (reason.trim().length > 1000) return res.status(400).json({ success: false, message: 'Reason must be 1000 characters or less.' });
     if (!['cash', 'online'].includes(paymentMethod)) return res.status(400).json({ success: false, message: 'Choose a valid payment method.' });
 
-    const slots = await availableSlots(doctor, appointmentDate);
-    if (!slots.includes(appointmentTime)) return res.status(409).json({ success: false, message: 'This appointment time is unavailable. Choose another slot.', availableSlots: slots });
+    // The patient asks for a date; the serial and its time come from the
+    // doctor's own schedule, so nobody picks a time the doctor is not there for.
+    const next = await nextAssignment(doctor, appointmentDate);
+    if (!next) return res.status(409).json({ success: false, message: 'This doctor is fully booked on that date. Choose another date.' });
+    const { serial, time: appointmentTime } = next;
 
     const existing = await Appointment.findOne({ patient: req.user._id, doctor: doctor._id, appointmentDate, status: { $in: ['Pending', 'Approved'] } });
     if (existing) return res.status(409).json({ success: false, message: 'You already have an active appointment with this doctor on this date.' });
@@ -74,14 +77,15 @@ const createAppointment = async (req, res) => {
       fee: doctor.fee || 0,
       appointmentDate,
       appointmentTime,
+      serial,
       reason: reason.trim(),
       paymentMethod,
       bookingKey: bookingKey(req.user._id, doctor._id, appointmentDate),
       slotKey: slotKey(doctor._id, appointmentDate, appointmentTime),
     });
-    await notify(req.user._id, { type: 'appointment', title: 'Appointment requested', message: `Your appointment with ${doctor.name} on ${appointmentDate} at ${appointmentTime} is awaiting approval.`, link: '/my-appointments' });
-    await audit(req, 'appointment.created', 'Appointment', appointment._id, { doctor: doctor._id, appointmentDate, appointmentTime });
-    res.status(201).json({ success: true, message: 'Appointment booked successfully.', appointment });
+    await notify(req.user._id, { type: 'appointment', title: 'Appointment requested', message: `You are serial #${serial} with ${doctor.name} on ${appointmentDate}, at about ${appointmentTime}. It is awaiting approval.`, link: '/my-appointments' });
+    await audit(req, 'appointment.created', 'Appointment', appointment._id, { doctor: doctor._id, appointmentDate, appointmentTime, serial });
+    res.status(201).json({ success: true, message: `Booked. You are serial #${serial}, at about ${appointmentTime}.`, appointment });
   } catch (error) {
     console.error('Create appointment error:', error);
     if (error.code === 11000) return res.status(409).json({ success: false, message: 'This appointment is no longer available. Choose another date or time.' });
@@ -220,17 +224,18 @@ const reschedule = async (req, res) => {
     if (!appointment) return res.status(404).json({ success: false, message: 'Appointment not found.' });
     if (!['Pending', 'Approved'].includes(appointment.status) || appointment.isCurrentServing) return res.status(400).json({ success: false, message: 'This appointment cannot be rescheduled.' });
     const appointmentDate = String(req.body.appointmentDate || '');
-    const appointmentTime = String(req.body.appointmentTime || '');
     if (!validDate(appointmentDate) || appointmentDate < today()) return res.status(400).json({ success: false, message: 'Choose today or a future valid date.' });
     const doctor = await User.findOne({ _id: appointment.doctor, role: 'doctor', isActive: true });
     if (!doctor) return res.status(404).json({ success: false, message: 'Doctor is unavailable.' });
-    const slots = await availableSlots(doctor, appointmentDate, appointment._id);
-    if (!slots.includes(appointmentTime)) return res.status(409).json({ success: false, message: 'This appointment time is unavailable. Choose another slot.', availableSlots: slots });
+    const next = await nextAssignment(doctor, appointmentDate, appointment._id);
+    if (!next) return res.status(409).json({ success: false, message: 'This doctor is fully booked on that date. Choose another date.' });
+    const { serial, time: appointmentTime } = next;
     const duplicate = await Appointment.findOne({ _id: { $ne: appointment._id }, patient: req.user._id, doctor: doctor._id, appointmentDate, status: { $in: ['Pending', 'Approved'] } });
     if (duplicate) return res.status(409).json({ success: false, message: 'You already have an active appointment with this doctor on this date.' });
     const previous = { date: appointment.appointmentDate, time: appointment.appointmentTime };
     appointment.appointmentDate = appointmentDate;
     appointment.appointmentTime = appointmentTime;
+    appointment.serial = serial;
     appointment.status = 'Pending';
     appointment.queueNumber = null;
     appointment.queueStatus = 'Waiting';
@@ -239,9 +244,9 @@ const reschedule = async (req, res) => {
     appointment.slotKey = slotKey(doctor._id, appointmentDate, appointmentTime);
     appointment.rescheduleCount += 1;
     await appointment.save();
-    await notify(appointment.patient, { type: 'appointment', title: 'Appointment rescheduled', message: `Your new appointment is ${appointmentDate} at ${appointmentTime}. It is awaiting approval.`, link: '/my-appointments' });
+    await notify(appointment.patient, { type: 'appointment', title: 'Appointment rescheduled', message: `You are now serial #${serial} on ${appointmentDate}, at about ${appointmentTime}. It is awaiting approval.`, link: '/my-appointments' });
     await audit(req, 'appointment.rescheduled', 'Appointment', appointment._id, { previous, appointmentDate, appointmentTime });
-    res.json({ success: true, message: 'Appointment rescheduled and sent for approval.', appointment });
+    res.json({ success: true, message: `Moved to ${appointmentDate}. You are serial #${serial}, at about ${appointmentTime}.`, appointment });
   } catch (error) {
     if (error.code === 11000) return res.status(409).json({ success: false, message: 'This date or time conflicts with another appointment.' });
     if (error.name === 'ValidationError' || error.name === 'CastError') return res.status(400).json({ success: false, message: 'Enter valid appointment information.' });
@@ -324,9 +329,12 @@ const reassignDoctor = async (req, res) => {
     const appointment = await Appointment.findById(req.params.id); if (!appointment) return res.status(404).json({ success: false, message: 'Appointment not found.' });
     if (!['Pending', 'Approved'].includes(appointment.status) || appointment.isCurrentServing) return res.status(400).json({ success: false, message: 'This appointment cannot be reassigned.' });
     const doctor = await User.findOne({ _id: req.body.doctorId, role: 'doctor', isActive: true }); if (!doctor) return res.status(404).json({ success: false, message: 'Replacement doctor not found.' });
-    const appointmentTime = String(req.body.appointmentTime || appointment.appointmentTime); const slots = await availableSlots(doctor, appointment.appointmentDate, appointment._id);
-    if (!slots.includes(appointmentTime)) return res.status(409).json({ success: false, message: 'Replacement doctor is unavailable at that time.', availableSlots: slots });
-    const previousDoctor = appointment.doctor; appointment.doctor = doctor._id; appointment.doctorName = doctor.name; appointment.specialty = doctor.specialty || 'General Medicine'; appointment.location = doctor.location || appointment.location; appointment.fee = doctor.fee || 0; appointment.appointmentTime = appointmentTime; appointment.status = 'Pending'; appointment.queueNumber = null; appointment.queueStatus = 'Waiting'; appointment.isCurrentServing = false; appointment.bookingKey = bookingKey(appointment.patient, doctor._id, appointment.appointmentDate); appointment.slotKey = slotKey(doctor._id, appointment.appointmentDate, appointmentTime); await appointment.save();
+    // The replacement doctor keeps their own grid, so the patient takes the
+    // next free place in it rather than the time they held with the old doctor.
+    const next = await nextAssignment(doctor, appointment.appointmentDate, appointment._id);
+    if (!next) return res.status(409).json({ success: false, message: 'Replacement doctor is fully booked on that date.' });
+    const { serial, time: appointmentTime } = next;
+    const previousDoctor = appointment.doctor; appointment.doctor = doctor._id; appointment.doctorName = doctor.name; appointment.specialty = doctor.specialty || 'General Medicine'; appointment.location = doctor.location || appointment.location; appointment.fee = doctor.fee || 0; appointment.appointmentTime = appointmentTime; appointment.serial = serial; appointment.status = 'Pending'; appointment.queueNumber = null; appointment.queueStatus = 'Waiting'; appointment.isCurrentServing = false; appointment.bookingKey = bookingKey(appointment.patient, doctor._id, appointment.appointmentDate); appointment.slotKey = slotKey(doctor._id, appointment.appointmentDate, appointmentTime); await appointment.save();
     await notify(appointment.patient, { type: 'appointment', title: 'Doctor changed', message: `Your appointment was reassigned to ${doctor.name} and is awaiting approval.`, link: '/my-appointments' }); await audit(req, 'appointment.doctor_reassigned', 'Appointment', appointment._id, { previousDoctor, doctor: doctor._id });
     res.json({ success: true, message: 'Appointment reassigned.', appointment });
   } catch (error) { if (error.code === 11000) return res.status(409).json({ success: false, message: 'The reassigned appointment conflicts with another booking.' }); res.status(500).json({ success: false, message: 'Unable to reassign appointment.' }); }

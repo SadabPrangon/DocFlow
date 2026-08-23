@@ -762,3 +762,13 @@ input:focus, select:focus, textarea:focus {
 .sched-save { display: flex; align-items: center; gap: .75rem; }
 .sched-button { border: 1px solid var(--brand); border-radius: 8px; background: var(--brand); padding: .55rem 1.1rem; font-weight: 700; color: #fff; }
 .sched-button:hover { border-color: var(--brand-dark); background: var(--brand-dark); }
+
+/* The system works out the patient's place in the day, so booking shows the
+   serial it assigned rather than a list of times to guess between. */
+.serial { margin-top: 1.25rem; border: 1px solid var(--brand-line); border-radius: 8px; background: var(--brand-tint); padding: 1rem 1.1rem; }
+.serial-label { font-weight: 700; color: var(--brand); }
+.serial-time { margin-top: .35rem; color: var(--ink); }
+.serial-empty { color: var(--muted); }
+.serial-empty.bad { color: var(--danger); }
+.dark-mode .serial { border-color: var(--elevated); background: var(--elevated); }
+.tbl-serial { align-self: center; font-weight: 600; color: var(--muted); }

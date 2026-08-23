@@ -10,6 +10,7 @@ const appointmentSchema = new mongoose.Schema(
     fee: { type: Number, required: true, min: 0 },
     appointmentDate: { type: String, required: true, index: true },
     appointmentTime: { type: String, required: true },
+    serial: { type: Number, default: null },
     reason: { type: String, required: true, trim: true },
     status: {
       type: String,
