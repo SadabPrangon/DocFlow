@@ -16,7 +16,6 @@ import ReceptionistDashboard from './pages/ReceptionistDashboard';
 import ForgotPasswordFlow from './pages/ForgotPasswordFlow';
 import Security from './pages/Security';
 import Availability from './pages/Availability';
-import Audit from './pages/Audit';
 import MedicalRecords from './pages/MedicalRecords';
 import ClinicalWorkspace from './pages/ClinicalWorkspace';
 import Messages from './pages/Messages';
@@ -49,7 +48,6 @@ export default function App(){return <Routes>
   <Route path="/settings" element={guard(['patient','admin','doctor','receptionist'],<Settings/>)}/>
   <Route path="/help" element={guard(['patient','admin','doctor','receptionist'],<Help/>)}/>
   <Route path="/availability" element={guard(['doctor'],<Availability/>)}/>
-  <Route path="/audit" element={guard(['admin'],<Audit/>)}/>
   <Route path="/medical-records" element={guard(['patient'],<MedicalRecords/>)}/>
   <Route path="/clinical-workspace" element={guard(['doctor'],<ClinicalWorkspace/>)}/>
   <Route path="/messages" element={guard(['patient','doctor'],<Messages/>)}/>

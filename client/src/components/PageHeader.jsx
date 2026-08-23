@@ -14,7 +14,7 @@ const patientNav = [
   ['/ai-recommendation', Bot, 'Care assistant'],
 ];
 const doctorNav = [['/doctor-dashboard', LayoutDashboard, 'Dashboard'], ['/clinical-workspace', FileHeart, 'Clinical workspace'], ['/messages', MessageSquare, 'Messages'], ['/availability', CalendarDays, 'Availability']];
-const adminNav = [['/admin-dashboard', LayoutDashboard, 'Dashboard'], ['/reports', FileHeart, 'Reports'], ['/operations', CalendarDays, 'Operations'], ['/audit', LockKeyhole, 'Audit log']];
+const adminNav = [['/admin-dashboard', LayoutDashboard, 'Dashboard'], ['/reports', FileHeart, 'Reports'], ['/operations', CalendarDays, 'Operations']];
 const receptionistNav = [['/receptionist-dashboard', LayoutDashboard, 'Dashboard'], ['/operations', CalendarDays, 'Operations']];
 
 export default function PageHeader({ title, backTo }) {
@@ -92,7 +92,6 @@ export default function PageHeader({ title, backTo }) {
           <div className="flex items-center gap-3 border-b border-slate-100 px-3 py-3"><span className="sidebar-avatar">{user?.avatar ? <img src={user.avatar} alt=""/> : <UserRound size={17}/>}</span><span className="min-w-0"><p className="truncate text-sm font-bold text-slate-800">{user?.name || 'DocFlow user'}</p><p className="truncate text-xs text-slate-500">{user?.email || user?.role}</p></span></div>
           {user?.role === 'patient' && <Link to="/profile" onClick={() => setProfileOpen(false)}><UserRound size={16}/>View profile</Link>}
           {user?.role === 'doctor' && <Link to="/availability" onClick={() => setProfileOpen(false)}><CalendarDays size={16}/>Schedule & availability</Link>}
-          {user?.role === 'admin' && <Link to="/audit" onClick={() => setProfileOpen(false)}><LayoutDashboard size={16}/>Audit log & export</Link>}
           <Link to="/security" onClick={() => setProfileOpen(false)}><LockKeyhole size={16}/>Account security</Link>
           <button onClick={logout} className="danger"><LogOut size={16}/>Log out</button>
         </div>}

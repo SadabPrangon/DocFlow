@@ -39,7 +39,6 @@ async function mockApi(page) {
     else if (path.includes('/notifications')) body = { success:true, notifications:[], unread:0 };
     else if (path.includes('/users/admin/stats')) body = { success:true, stats:{patients:2,doctors:2,receptionists:1,appointments:3} };
     else if (path.includes('/users/admin/users')) body = { success:true, users:[] };
-    else if (path.includes('/users/admin/audit')) body = { success:true, logs:[] };
     await route.fulfill({ status:200, contentType:'application/json', body:JSON.stringify(body) });
   });
 }
@@ -245,6 +244,7 @@ async function run() {
     await page.evaluate(()=>{history.pushState({},'', '/admin-dashboard');dispatchEvent(new PopStateEvent('popstate'))});
     await page.waitForSelector('.wipe');
     check((await page.locator('.wipe-note').innerText()).includes('There is no undo'), 'The admin clear says plainly that it cannot be undone', await page.locator('.wipe-note').innerText());
+    check(!(await page.locator('main').innerText()).includes('audit')&&await page.locator('.sidebar-nav').getByRole('link',{name:'Audit log'}).count()===0, 'The audit log is no longer part of the admin screens', (await page.locator('main').innerText()).slice(0,120));
     check(await page.locator('.wipe-button').isDisabled(), 'The clear button starts out of reach');
     await page.locator('.wipe-controls input').fill('delete all data');
     await page.waitForTimeout(150);
