@@ -23,7 +23,10 @@ async function mockApi(page) {
     else if (path.includes('/auth/password/forgot')) body = { success:true, message:'If an active account exists for this email, a verification code has been sent.', expiresAt:new Date(Date.now()+120000).toISOString() };
     else if (path.includes('/auth/password/verify-otp')) body = { success:true, message:'Email verified.', resetToken:'qa-reset-token' };
     else if (path.includes('/auth/password/reset')) body = { success:true, message:'Password updated successfully. You can now log in.' };
-    else if (path.includes('/appointments/doctor/mine') || path.includes('/appointments/all')) body = { success:true, appointments:[] };
+    else if (path.includes('/appointments/doctor/mine')) body = { success:true, appointments:[
+      {_id:'doc-appt-1',patient:{name:'QA Patient'},appointmentDate:new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10),appointmentTime:'9:00 AM',serial:1,queueNumber:1,queueStatus:'Current',status:'Approved',isCurrentServing:true,reason:''},
+    ] };
+    else if (path.includes('/appointments/all')) body = { success:true, appointments:[] };
     else if (path.includes('/clinical/history/mine')) body = { success:true, records:[], prescriptions:[] };
     else if (path.includes('/payments/mine')) body = { success:true, payments:[] };
     else if (path.includes('/appointments/reports/summary')) body = { success:true, report:{byStatus:[],byDoctor:[],revenue:{total:0,count:0}} };
@@ -163,7 +166,14 @@ async function run() {
     await page.evaluate(()=>{localStorage.setItem('user',JSON.stringify({id:'doctor-1',name:'QA Doctor',email:'doctor@qa.test',role:'doctor'}));history.pushState({},'', '/clinical-workspace');dispatchEvent(new PopStateEvent('popstate'))});
     await page.waitForTimeout(300);
     check(await page.getByText('Select an appointment to document care.').isVisible(), 'Doctor clinical workspace renders', `${page.url()} — ${(await page.locator('body').innerText()).slice(0,300)}`);
-    // A full navigation would re-run the init script and log back in as the patient.
+
+    await page.evaluate(()=>{history.pushState({},'', '/doctor-dashboard');dispatchEvent(new PopStateEvent('popstate'))});
+    await page.waitForSelector('.dash-tiles');
+    check(!(await page.locator('main').innerText()).includes('Booking availability')&&await page.locator('main input[type=time]').count()===0, 'The doctor dashboard no longer edits the schedule');
+    check((await page.locator('.dash-tile small').allInnerTexts()).map(t=>t.trim()).join('|')==='Booked today|Still waiting|Seen today|Awaiting approval', 'The doctor dashboard leads with the day in numbers', (await page.locator('.dash-tile').allInnerTexts()).join(' | '));
+    check((await page.locator('.dash-card').first().innerText()).includes('QA Patient'), 'The patient in the room is named on the dashboard', await page.locator('.dash-card').first().innerText());
+    check(await page.locator('.dash-feed li').count()===1, "Today's list shows the day's patients");
+    check(await page.getByRole('link',{name:/Schedule/}).isVisible(), 'The dashboard points at the schedule page instead of holding it');    // A full navigation would re-run the init script and log back in as the patient.
     await page.evaluate(()=>{history.pushState({},'', '/availability');dispatchEvent(new PopStateEvent('popstate'))});
     await page.waitForSelector('.cons');
     const minutes = page.locator('.cons-minutes input');
