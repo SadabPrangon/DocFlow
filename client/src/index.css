@@ -675,7 +675,7 @@ input:focus, select:focus, textarea:focus {
 
 /* Search, filter and sort toolbar, shared by the list modules. */
 .tbar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
-.tbar-search { position: relative; flex: 1; min-width: 15rem; }
+.tbar-search { position: relative; flex: none; width: 17rem; max-width: 100%; }
 .tbar-search svg { position: absolute; left: .65rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
 .tbar-search input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: .55rem .7rem .55rem 2rem; }
 .tbar select { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .55rem .7rem; color: var(--ink); }
@@ -684,4 +684,4 @@ input:focus, select:focus, textarea:focus {
 .tbar-count { margin-left: auto; flex: none; color: var(--muted); }
 .tbar-empty { margin-top: 1.25rem; border: 1px dashed var(--line); border-radius: 8px; padding: 1.25rem; text-align: center; color: var(--muted); }
 .dark-mode .tbar select, .dark-mode .tbar-clear, .dark-mode .tbar-search input { border-color: var(--elevated); background: var(--elevated); color: var(--ink); }
-@media (max-width: 600px) { .tbar-search { min-width: 100%; } .tbar-count { margin-left: 0; } }
+@media (max-width: 600px) { .tbar-search { width: 100%; } .tbar-count { margin-left: 0; } }
