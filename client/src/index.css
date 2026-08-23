@@ -701,3 +701,35 @@ input:focus, select:focus, textarea:focus {
 .dd-option.selected { font-weight: 700; }
 .dark-mode .dd-button, .dark-mode .dd-list { border-color: var(--elevated); background: var(--elevated); }
 .dark-mode .dd-list { box-shadow: 0 18px 45px rgba(0, 0, 0, .5); }
+
+/* Appointments read as a list of the same few fields, so they sit in a table
+   rather than in cards. */
+.tbl-wrap { margin-top: 1.25rem; overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.tbl { width: 100%; border-collapse: collapse; text-align: left; }
+.tbl th { border-bottom: 1px solid var(--line); padding: .6rem .85rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.tbl td { border-bottom: 1px solid var(--line); padding: .7rem .85rem; vertical-align: top; }
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl tbody tr:hover td { background: var(--elevated); }
+.tbl-name { font-weight: 700; color: var(--ink); }
+.tbl-sub { color: var(--muted); }
+.tbl-when { white-space: nowrap; }
+.tbl-reason { min-width: 11rem; max-width: 18rem; }
+.tbl-rx { display: flex; align-items: flex-start; gap: .3rem; margin-top: .35rem; color: var(--success); }
+.tbl-rx svg { flex: none; margin-top: .15rem; }
+.tbl-actions { display: flex; gap: .35rem; white-space: nowrap; }
+.tbl-act { display: inline-flex; align-items: center; gap: .3rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .35rem .55rem; font-weight: 600; color: var(--ink); }
+.tbl-act:hover { border-color: var(--brand-line); background: var(--brand-tint); color: var(--brand); }
+.tbl-act.primary { border-color: var(--brand); background: var(--brand); color: #fff; }
+.tbl-act.primary:hover { border-color: var(--brand-dark); background: var(--brand-dark); color: #fff; }
+.tbl-act.danger:hover { border-color: var(--danger-line); background: var(--danger-tint); color: var(--danger); }
+.tbl-edit td { background: var(--elevated); }
+.tbl-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .6rem; }
+.tbl-form label { display: flex; flex-direction: column; gap: .25rem; font-weight: 600; color: var(--muted); }
+.tbl-form input, .tbl-form select { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .45rem .55rem; color: var(--ink); }
+.dark-mode .tbl-wrap, .dark-mode .tbl-act:not(.primary), .dark-mode .tbl-form input, .dark-mode .tbl-form select { border-color: var(--elevated); }
+.dark-mode .tbl-act:not(.primary) { background: var(--elevated); }
+
+/* Status as a colour, an icon and a word, so colour is never the only carrier. */
+.pill { display: inline-flex; align-items: center; gap: .25rem; border-radius: 8px; padding: .15rem .45rem; font-weight: 700; white-space: nowrap; background: var(--warning-tint); color: var(--warning-ink); }
+.pill.ok { background: var(--success-tint); color: var(--success); }
+.pill.bad { background: var(--danger-tint); color: var(--danger); }

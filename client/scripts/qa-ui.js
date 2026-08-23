@@ -112,6 +112,15 @@ async function run() {
     await page.goto(`${BASE}/live-queue`,{waitUntil:'networkidle'});
     check((await page.locator('.app-topbar h2').innerText()).trim()==='Live Queue', 'Live-queue selection workspace renders');
     check(await page.getByRole('link',{name:'Open live tracker'}).isVisible(), 'Approved queued appointment can open its live tracker');
+    await page.goto(`${BASE}/my-appointments`,{waitUntil:'networkidle'});
+    await page.waitForSelector('.tbl tbody tr');
+    check((await page.locator('.tbl th').allInnerTexts()).map(t=>t.trim()).join('|')==='Doctor|Date and time|Location|Reason|Queue|Status|Actions', 'Appointments render as a table, not cards');
+    check(await page.locator('main article').count()===0, 'No appointment card survives beside the table');
+    const apptRow = (await page.locator('.tbl tbody tr').first().innerText()).split(/\s+/).join(' ');
+    check(apptRow.includes('Dr QA')&&apptRow.includes('#7')&&apptRow.includes('Approved'), 'Appointment row carries doctor, queue number and status', apptRow);
+    check((await page.locator('.tbl-actions').first().innerText()).split('\n').join('|')==='Live queue|Reschedule|Cancel', 'Approved row offers live queue, reschedule and cancel');
+    await page.locator('.tbl-act',{hasText:'Reschedule'}).first().click();
+    check(await page.locator('.tbl-edit td').getAttribute('colspan')==='7', 'Reschedule opens a row spanning the whole table');
     await page.goto(`${BASE}/medical-records`,{waitUntil:'networkidle'});
     check((await page.locator('.app-topbar h2').innerText()).trim()==='Medical Records', 'Medical-record workspace renders');
     await page.goto(`${BASE}/payments`,{waitUntil:'networkidle'});

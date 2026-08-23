@@ -1,5 +1,5 @@
-import { CalendarClock, CalendarDays, Clock, MapPin, Radio, Search, XCircle } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { CalendarClock, CheckCircle2, Clock3, Pill, Radio, Search, TriangleAlert, XCircle } from 'lucide-react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Dropdown from '../components/Dropdown';
 import PageHeader from '../components/PageHeader';
@@ -12,6 +12,15 @@ const SORTS = {
   doctor: ['Doctor A to Z', (a, b) => String(a.doctorName).localeCompare(String(b.doctorName))],
   status: ['Status', (a, b) => String(a.status).localeCompare(String(b.status))],
 };
+
+// Status carries an icon and a word as well as a colour, never colour alone.
+const tone = (status) => ({
+  Approved: ['ok', CheckCircle2],
+  Completed: ['ok', CheckCircle2],
+  Pending: ['warn', Clock3],
+  Cancelled: ['bad', TriangleAlert],
+  'No-show': ['bad', TriangleAlert],
+}[status] || ['warn', Clock3]);
 
 const localDate = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 
@@ -54,7 +63,106 @@ export default function MyAppointments() {
   }, [items, query, status, sort]);
   const filtering = Boolean(query.trim() || status);
 
-  const color = (status) => status === 'Approved' ? 'bg-blue-100 text-blue-700' : status === 'Completed' ? 'bg-green-100 text-green-700' : status === 'Cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700';
+  return <div className="min-h-screen bg-slate-100">
+    <PageHeader title="My Appointments" backTo="/dashboard"/>
+    <main className="mx-auto max-w-7xl px-6 py-10">
+      {msg && <div className="rounded-xl bg-blue-50 p-3 text-blue-700">{msg}</div>}
 
-  return <div className="min-h-screen bg-slate-100"><PageHeader title="My Appointments" backTo="/dashboard"/><main className="mx-auto max-w-6xl px-6 py-10">{msg && <div className="mt-5 rounded-xl bg-blue-50 p-3 text-blue-700">{msg}</div>}<div className="tbar"><span className="tbar-search"><Search size={14}/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by doctor, specialty or reason" aria-label="Search appointments"/></span><Dropdown label="Filter by status" value={status} onChange={setStatus} options={[{ value: '', label: 'All statuses' }, ...statuses.map((item) => ({ value: item, label: item }))]}/><Dropdown label="Sort appointments" value={sort} onChange={setSort} options={Object.entries(SORTS).map(([value, [label]]) => ({ value, label }))}/>{filtering && <button type="button" className="tbar-clear" onClick={() => { setQuery(''); setStatus(''); }}>Clear</button>}<span className="tbar-count">{visible.length} of {items.length}</span></div>{!visible.length && <p className="tbar-empty">{items.length ? 'No appointment matches that.' : 'No appointments yet.'}</p>}<div className="mt-5 grid gap-6 md:grid-cols-2">{visible.map((a) => <article key={a._id} className="rounded-3xl bg-white p-6 shadow"><div className="flex justify-between gap-4"><div><h2 className="text-xl font-bold">{a.doctorName}</h2><p className="font-semibold text-blue-600">{a.specialty}</p></div><span className={`h-fit rounded-full px-3 py-1 text-sm font-semibold ${color(a.status)}`}>{a.status}</span></div><div className="mt-5 space-y-3 text-slate-600"><p className="flex gap-3"><CalendarDays size={18}/>{a.appointmentDate}</p><p className="flex gap-3"><Clock size={18}/>{a.appointmentTime}</p><p className="flex gap-3"><MapPin size={18}/>{a.location}</p></div><div className="mt-5 rounded-2xl bg-slate-50 p-4"><b>Reason</b><p className="mt-1">{a.reason}</p></div>{a.queueNumber && <p className="mt-4 font-bold text-blue-600">Queue #{a.queueNumber} · {a.queueStatus}</p>}{editing === a._id ? <form onSubmit={reschedule} className="mt-5 rounded-2xl border p-4"><h3 className="font-bold">Choose a new time</h3><input required min={localDate()} type="date" value={form.appointmentDate} onChange={(e) => setForm({ appointmentDate: e.target.value, appointmentTime: '' })} className="mt-3 w-full rounded-xl border px-3 py-2"/><select required value={form.appointmentTime} onChange={(e) => setForm({ ...form, appointmentTime: e.target.value })} className="mt-3 w-full rounded-xl border px-3 py-2"><option value="">Select available time</option>{slots.map((time) => <option key={time}>{time}</option>)}</select><div className="mt-3 flex gap-2"><button className="rounded-xl bg-blue-600 px-4 py-2 font-semibold text-white">Save</button><button type="button" onClick={() => setEditing(null)} className="rounded-xl border px-4 py-2">Close</button></div></form> : <div className="mt-5 flex flex-wrap gap-3">{a.status === 'Approved' && <Link to={`/live-queue/${a._id}`} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white"><Radio size={18}/>Live Queue</Link>}{['Pending', 'Approved'].includes(a.status) && !a.isCurrentServing && <button onClick={() => { setEditing(a._id); setForm({ appointmentDate: '', appointmentTime: '' }); }} className="flex items-center gap-2 rounded-xl border px-4 py-3 font-semibold text-blue-600"><CalendarClock size={18}/>Reschedule</button>}{['Pending', 'Approved'].includes(a.status) && !a.isCurrentServing && <button onClick={() => cancel(a._id)} className="flex items-center gap-2 rounded-xl border border-red-200 px-4 py-3 font-semibold text-red-600"><XCircle size={18}/>Cancel</button>}</div>}{a.prescription && <div className="mt-4 rounded-2xl bg-green-50 p-4"><b>Prescription</b><p>{a.prescription}</p></div>}</article>)}{items.length === 0 && <div className="rounded-3xl bg-white p-10 text-center shadow">No appointments yet.</div>}</div></main></div>;
+      <div className="tbar">
+        <span className="tbar-search">
+          <Search size={14}/>
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by doctor, specialty or reason" aria-label="Search appointments"/>
+        </span>
+        <Dropdown
+          label="Filter by status"
+          value={status}
+          onChange={setStatus}
+          options={[{ value: '', label: 'All statuses' }, ...statuses.map((item) => ({ value: item, label: item }))]}
+        />
+        <Dropdown
+          label="Sort appointments"
+          value={sort}
+          onChange={setSort}
+          options={Object.entries(SORTS).map(([value, [label]]) => ({ value, label }))}
+        />
+        {filtering && <button type="button" className="tbar-clear" onClick={() => { setQuery(''); setStatus(''); }}>Clear</button>}
+        <span className="tbar-count">{visible.length} of {items.length}</span>
+      </div>
+
+      {!visible.length && <p className="tbar-empty">{items.length ? 'No appointment matches that.' : 'No appointments yet.'}</p>}
+
+      {Boolean(visible.length) && <div className="tbl-wrap">
+        <table className="tbl">
+          <thead>
+            <tr>
+              <th scope="col">Doctor</th>
+              <th scope="col">Date and time</th>
+              <th scope="col">Location</th>
+              <th scope="col">Reason</th>
+              <th scope="col">Queue</th>
+              <th scope="col">Status</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {visible.map((appointment) => {
+              const [state, Icon] = tone(appointment.status);
+              // Only an appointment that has not started yet can still be moved.
+              const changeable = ['Pending', 'Approved'].includes(appointment.status) && !appointment.isCurrentServing;
+              const queueable = appointment.status === 'Approved';
+              return <Fragment key={appointment._id}>
+                <tr>
+                  <td>
+                    <div className="tbl-name">{appointment.doctorName}</div>
+                    <div className="tbl-sub">{appointment.specialty}</div>
+                  </td>
+                  <td className="tbl-when">
+                    <div>{appointment.appointmentDate}</div>
+                    <div className="tbl-sub">{appointment.appointmentTime}</div>
+                  </td>
+                  <td>{appointment.location}</td>
+                  <td className="tbl-reason">
+                    {appointment.reason}
+                    {appointment.prescription && <span className="tbl-rx"><Pill size={13}/>{appointment.prescription}</span>}
+                  </td>
+                  <td>
+                    {appointment.queueNumber
+                      ? <><div>#{appointment.queueNumber}</div><div className="tbl-sub">{appointment.queueStatus}</div></>
+                      : <span className="tbl-sub">Not queued</span>}
+                  </td>
+                  <td><span className={`pill ${state}`}><Icon size={12}/>{appointment.status}</span></td>
+                  <td>
+                    <div className="tbl-actions">
+                      {queueable && <Link to={`/live-queue/${appointment._id}`} className="tbl-act primary"><Radio size={13}/>Live queue</Link>}
+                      {changeable && <button type="button" className="tbl-act" onClick={() => { setEditing(editing === appointment._id ? null : appointment._id); setForm({ appointmentDate: '', appointmentTime: '' }); }}><CalendarClock size={13}/>Reschedule</button>}
+                      {changeable && <button type="button" className="tbl-act danger" onClick={() => cancel(appointment._id)}><XCircle size={13}/>Cancel</button>}
+                      {!queueable && !changeable && <span className="tbl-sub">No action left</span>}
+                    </div>
+                  </td>
+                </tr>
+
+                {editing === appointment._id && <tr className="tbl-edit">
+                  <td colSpan={7}>
+                    <form onSubmit={reschedule} className="tbl-form">
+                      <label>New date
+                        <input required min={localDate()} type="date" value={form.appointmentDate} onChange={(event) => setForm({ appointmentDate: event.target.value, appointmentTime: '' })}/>
+                      </label>
+                      <label>New time
+                        <select required value={form.appointmentTime} onChange={(event) => setForm({ ...form, appointmentTime: event.target.value })}>
+                          <option value="">Select available time</option>
+                          {slots.map((time) => <option key={time}>{time}</option>)}
+                        </select>
+                      </label>
+                      <button className="tbl-act primary">Save</button>
+                      <button type="button" className="tbl-act" onClick={() => setEditing(null)}>Close</button>
+                    </form>
+                  </td>
+                </tr>}
+              </Fragment>;
+            })}
+          </tbody>
+        </table>
+      </div>}
+    </main>
+  </div>;
 }
