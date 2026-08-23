@@ -5,7 +5,7 @@ import { clearAuth, dashboardFor, getUser } from '../lib/auth';
 import api from '../lib/api';
 
 const patientNav = [
-  ['/dashboard', LayoutDashboard, 'Overview'],
+  ['/dashboard', LayoutDashboard, 'Dashboard'],
   ['/doctors', Stethoscope, 'Doctors'],
   ['/my-appointments', CalendarDays, 'Appointments'],
   ['/live-queue', Radio, 'Live Queue'],
