@@ -1,5 +1,5 @@
-import { CheckCircle2, Search, UserPlus, UserRound, XCircle } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { CheckCircle2, Search, UserPlus, UserRound, X, XCircle } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Dropdown from '../components/Dropdown';
 import PageHeader from '../components/PageHeader';
 import RowMenu from '../components/RowMenu';
@@ -18,6 +18,7 @@ export default function AdminUsers() {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState(empty);
   const [msg, setMsg] = useState('');
+  const dialog = useRef(null);
   const [err, setErr] = useState(false);
 
   // The endpoint filters, so the list stays right however many accounts exist.
@@ -32,6 +33,13 @@ export default function AdminUsers() {
   }, [query, role, active]);
 
   useEffect(() => { const timer = setTimeout(load, 250); return () => clearTimeout(timer); }, [load]);
+
+  useEffect(() => {
+    const element = dialog.current;
+    if (!element) return;
+    if (creating && !element.open) element.showModal();
+    if (!creating && element.open) element.close();
+  }, [creating]);
 
   const submit = async (event) => {
     event.preventDefault();
@@ -71,13 +79,21 @@ export default function AdminUsers() {
           options={[{ value: '', label: 'Active and inactive' }, { value: 'true', label: 'Active only' }, { value: 'false', label: 'Inactive only' }]}
         />
         {filtering && <button type="button" className="tbar-clear" onClick={() => { setQuery(''); setRole(''); setActive(''); }}>Clear</button>}
-        <button type="button" className="tbl-act primary" onClick={() => setCreating((was) => !was)}><UserPlus size={13}/>{creating ? 'Close' : 'New staff account'}</button>
+        <button type="button" className="tbl-act primary" onClick={() => setCreating(true)}><UserPlus size={13}/>New staff account</button>
         <span className="tbar-count">{loaded ? `${users.length} shown` : 'Loading…'}</span>
       </div>
 
-      {creating && <form onSubmit={submit} className="staff-form">
-        <p className="cons-label">New doctor or receptionist</p>
-        <p className="cons-hint">Set a strong temporary password and pass it on securely. Patients register themselves.</p>
+      {/* A native dialog, so Escape, the backdrop and focus behave without being
+          reimplemented here. */}
+      <dialog ref={dialog} className="modal" onClose={() => setCreating(false)} onClick={(event) => { if (event.target === dialog.current) setCreating(false); }}>
+        <form onSubmit={submit} className="modal-body">
+          <div className="modal-head">
+            <div>
+              <p className="cons-label">New doctor or receptionist</p>
+              <p className="cons-hint">Set a strong temporary password and pass it on securely. Patients register themselves.</p>
+            </div>
+            <button type="button" className="modal-close" aria-label="Close" onClick={() => setCreating(false)}><X size={16}/></button>
+          </div>
         <div className="staff-grid">
           {FIELDS.map(([name, label]) => (form.role === 'receptionist' && DOCTOR_ONLY.includes(name) ? null : <label key={name}>{label}
             <input
@@ -95,9 +111,13 @@ export default function AdminUsers() {
               options={[{ value: 'doctor', label: 'Doctor' }, { value: 'receptionist', label: 'Receptionist' }]}
             />
           </label>
-        </div>
-        <button className="tbl-act primary staff-submit">Create account</button>
-      </form>}
+          </div>
+          <div className="modal-actions">
+            <button type="button" className="tbl-act" onClick={() => setCreating(false)}>Cancel</button>
+            <button className="tbl-act primary">Create account</button>
+          </div>
+        </form>
+      </dialog>
 
       {!users.length && loaded && <p className="tbar-empty">No account matches that.</p>}
 

@@ -259,9 +259,14 @@ async function run() {
     await page.locator('.tbl tbody tr',{hasText:'QA Doctor'}).locator('.rowmenu-button').click();
     check((await page.locator('.rowmenu-item').allInnerTexts()).map(t=>t.trim()).join('|')==='Deactivate', 'A staff account can be switched off from its row', (await page.locator('.rowmenu-item').allInnerTexts()).join('|'));
     await page.keyboard.press('Escape');
+    check(await page.locator('.modal').evaluate(el=>el.open)===false, 'The new-staff form stays out of the way until it is asked for');
     await page.getByRole('button',{name:'New staff account'}).click();
-    await page.waitForSelector('.staff-form');
+    await page.waitForTimeout(250);
+    check(await page.locator('.modal').evaluate(el=>el.open)===true, 'New staff account opens a modal');
     check((await page.locator('.staff-grid label').allInnerTexts()).some(t=>t.startsWith('Temporary password')), 'Staff accounts are created from the users module', (await page.locator('.staff-grid label').allInnerTexts()).join('|'));
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(250);
+    check(await page.locator('.modal').evaluate(el=>el.open)===false, 'Escape closes the new-staff modal');
     // Back to the dashboard, where the clear-all checks below carry on.
     await page.evaluate(()=>{history.pushState({},'', '/admin-dashboard');dispatchEvent(new PopStateEvent('popstate'))});
     await page.waitForSelector('.wipe');

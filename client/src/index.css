@@ -795,16 +795,23 @@ input:focus, select:focus, textarea:focus {
 .leave-form .cons-hint { align-self: center; }
 .dark-mode .leave-form input { border-color: var(--elevated); background: var(--elevated); }
 
-/* Creating a staff account is a rare, deliberate act, so its form opens above
-   the list rather than sitting there taking space. */
-.staff-form { margin-top: 1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 1.1rem 1.2rem; }
+/* Creating a staff account is a rare, deliberate act, so it happens in a
+   dialog rather than in a panel the list has to make room for. */
+.modal { width: min(46rem, 92vw); inset: 0; margin: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 0; color: var(--ink); }
+.modal::backdrop { background: rgba(16, 24, 40, .45); }
+.modal-body { padding: 1.2rem 1.3rem; }
+.modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.modal-close { display: grid; height: 28px; width: 28px; flex: none; place-items: center; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--muted); }
+.modal-close:hover { border-color: var(--line); color: var(--ink); }
+.modal-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1.1rem; }
+.dark-mode .modal { border-color: var(--elevated); }
+.dark-mode .modal-close:hover { border-color: var(--elevated); }
 .staff-grid { display: grid; gap: .75rem; margin-top: .9rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .staff-grid label { display: flex; flex-direction: column; gap: .3rem; font-weight: 600; color: var(--muted); }
 .staff-grid input { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .55rem .7rem; color: var(--ink); }
 .staff-grid .dd-button { min-width: 100%; }
-.staff-submit { margin-top: .9rem; }
 .staff-tally { display: block; margin-top: .6rem; }
-.dark-mode .staff-form, .dark-mode .staff-grid input { border-color: var(--elevated); }
+.dark-mode .staff-grid input { border-color: var(--elevated); }
 .dark-mode .staff-grid input { background: var(--elevated); }
 @media (max-width: 900px) { .staff-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .staff-grid { grid-template-columns: 1fr; } }
