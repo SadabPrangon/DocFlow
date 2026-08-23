@@ -101,7 +101,7 @@ async function run() {
     check(await page.getByText('QA Patient').last().isVisible(), 'Profile dropdown shows user name');
     check(await page.getByRole('link',{name:'View profile'}).isVisible(), 'Profile dropdown shows profile link');
     check(await page.getByRole('button',{name:'Log out'}).isVisible(), 'Profile dropdown shows logout');
-    check(await page.getByText('Preferences').count()===0 && await page.getByText('Dashboard',{exact:true}).count()===0, 'Removed dropdown items stay absent');
+    check(await page.locator('.profile-dropdown').getByText('Preferences').count()===0 && await page.locator('.profile-dropdown').getByText('Dashboard',{exact:true}).count()===0, 'Removed dropdown items stay absent');
     const themeSize = await page.getByRole('button',{name:/Use light appearance/}).evaluate(el=>({w:el.getBoundingClientRect().width,h:el.getBoundingClientRect().height,svgW:el.querySelector('svg').getBoundingClientRect().width}));
     check(themeSize.w===28&&themeSize.h===28&&themeSize.svgW===14, 'Top-bar icon uses 28px container and 14px glyph', JSON.stringify(themeSize));
 
