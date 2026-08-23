@@ -241,6 +241,39 @@ const deleteMyAccount = async (req, res) => {
   res.json({ success: true, message: 'Account access and personal profile data were removed. Clinical records remain retained as required.' });
 };
 
+// Everything a clinic accumulates while running, as opposed to who works there.
+// Accounts, staff schedules and the audit trail are deliberately not in this
+// list: the admin has to be able to log back in afterwards, the doctors' hours
+// are configuration rather than data, and the wipe itself must stay recorded.
+const OPERATIONAL_COLLECTIONS = [
+  ['appointments', require('../models/Appointment')],
+  ['queues', require('../models/QueueState')],
+  ['payments', require('../models/Payment')],
+  ['paymentEvents', require('../models/PaymentEvent')],
+  ['messages', require('../models/Message')],
+  ['medicalRecords', require('../models/MedicalRecord')],
+  ['prescriptions', require('../models/Prescription')],
+  ['notifications', require('../models/Notification')],
+  ['assistantChats', require('../models/AiConversation')],
+];
+const RESET_PHRASE = 'DELETE ALL DATA';
+
+const resetAllData = async (req, res) => {
+  // One button, but not one keystroke: the phrase has to be typed, because
+  // nothing here can be undone and there is no backup inside the app.
+  if (String(req.body.confirm || '') !== RESET_PHRASE) {
+    return res.status(400).json({ success: false, message: `Type ${RESET_PHRASE} to confirm.` });
+  }
+  const deleted = {};
+  for (const [name, model] of OPERATIONAL_COLLECTIONS) {
+    const result = await model.deleteMany({});
+    deleted[name] = result.deletedCount || 0;
+  }
+  const total = Object.values(deleted).reduce((sum, count) => sum + count, 0);
+  await audit(req, 'data.reset', 'System', req.user._id, deleted);
+  res.json({ success: true, message: `Cleared ${total} records. User accounts and staff schedules were kept.`, deleted, total });
+};
+
 const updateNotificationPreferences = async (req, res) => {
   const reminderHoursBefore = Number(req.body.reminderHoursBefore);
   if (!Number.isInteger(reminderHoursBefore) || reminderHoursBefore < 1 || reminderHoursBefore > 168) return res.status(400).json({ success: false, message: 'Reminder time must be between 1 and 168 hours.' });
@@ -249,4 +282,4 @@ const updateNotificationPreferences = async (req, res) => {
   res.json({ success: true, message: 'Notification preferences updated.', notificationPreferences: req.user.notificationPreferences });
 };
 
-module.exports = { updateMe, adminStats, listUsers, createStaff, updateStaff, deactivateStaff, publicDoctors, doctorAvailability, updateAvailability, auditLogs, requestEmailChange, verifyEmailChange, exportAuditLogs, exportMyData, deleteMyAccount, updateNotificationPreferences };
+module.exports = { updateMe, adminStats, listUsers, createStaff, updateStaff, deactivateStaff, publicDoctors, doctorAvailability, updateAvailability, auditLogs, requestEmailChange, verifyEmailChange, exportAuditLogs, exportMyData, deleteMyAccount, updateNotificationPreferences, resetAllData };

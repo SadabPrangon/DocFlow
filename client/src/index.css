@@ -772,3 +772,17 @@ input:focus, select:focus, textarea:focus {
 .serial-empty.bad { color: var(--danger); }
 .dark-mode .serial { border-color: var(--elevated); background: var(--elevated); }
 .tbl-serial { align-self: center; font-weight: 600; color: var(--muted); }
+
+/* Clearing every record is not an ordinary admin action, so it does not look
+   like one: it sits apart, in the danger tone, behind a typed phrase. */
+.wipe { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1.25rem; margin-top: 2rem; border: 1px solid var(--danger-line); border-radius: 8px; background: var(--danger-tint); padding: 1.25rem 1.4rem; }
+.wipe-title { display: flex; align-items: center; gap: .4rem; color: var(--danger); }
+.wipe-note { max-width: 46rem; margin-top: .35rem; color: var(--ink); }
+.wipe-result { margin-top: .6rem; font-weight: 700; color: var(--danger-dark); }
+.wipe-controls { display: flex; flex-wrap: wrap; gap: .5rem; }
+.wipe-controls input { border: 1px solid var(--danger-line); border-radius: 8px; background: var(--surface); padding: .55rem .7rem; color: var(--ink); }
+.wipe-button { border: 1px solid var(--danger); border-radius: 8px; background: var(--danger); padding: .55rem 1rem; font-weight: 700; color: #fff; }
+.wipe-button:hover:not(:disabled) { border-color: var(--danger-dark); background: var(--danger-dark); }
+.wipe-button:disabled { opacity: .5; }
+.dark-mode .wipe { border-color: var(--danger); }
+.dark-mode .wipe-controls input { border-color: var(--danger); background: var(--elevated); }

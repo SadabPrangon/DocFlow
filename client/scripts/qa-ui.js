@@ -36,6 +36,7 @@ async function mockApi(page) {
     else if (path.includes('/notifications')) body = { success:true, notifications:[], unread:0 };
     else if (path.includes('/users/admin/stats')) body = { success:true, stats:{patients:2,doctors:2,receptionists:1,appointments:3} };
     else if (path.includes('/users/admin/users')) body = { success:true, users:[] };
+    else if (path.includes('/users/admin/audit')) body = { success:true, logs:[] };
     await route.fulfill({ status:200, contentType:'application/json', body:JSON.stringify(body) });
   });
 }
@@ -204,6 +205,17 @@ async function run() {
     await page.waitForTimeout(300);
     check((await page.locator('.app-topbar h2').innerText()).trim()==='Reports', 'Admin reporting workspace renders', `${page.url()} — ${(await page.locator('body').innerText()).slice(0,120)}`);
 
+    await page.evaluate(()=>{history.pushState({},'', '/admin-dashboard');dispatchEvent(new PopStateEvent('popstate'))});
+    await page.waitForSelector('.wipe');
+    check((await page.locator('.wipe-note').innerText()).includes('There is no undo'), 'The admin clear says plainly that it cannot be undone', await page.locator('.wipe-note').innerText());
+    check(await page.locator('.wipe-button').isDisabled(), 'The clear button starts out of reach');
+    await page.locator('.wipe-controls input').fill('delete all data');
+    await page.waitForTimeout(150);
+    check(await page.locator('.wipe-button').isDisabled(), 'A near-miss confirmation does not arm the clear');
+    await page.locator('.wipe-controls input').fill('DELETE ALL DATA');
+    await page.waitForTimeout(150);
+    check(!(await page.locator('.wipe-button').isDisabled()), 'The exact phrase arms the clear');
+    await page.locator('.wipe-controls input').fill('');
     await page.evaluate(()=>{localStorage.setItem('user',JSON.stringify({name:'QA Patient',email:'patient@qa.test',role:'patient'}));history.pushState({},'', '/ai-recommendation');dispatchEvent(new PopStateEvent('popstate'))});
     await page.waitForTimeout(300);
     await page.getByPlaceholder('Describe your symptoms...').fill('I have a skin rash');

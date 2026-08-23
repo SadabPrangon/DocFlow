@@ -540,6 +540,22 @@ async function run() {
       delete process.env.EMAIL_USER;delete process.env.EMAIL_PASS;
     }else skip('Real SMTP provider acceptance','Set QA_EMAIL_RECIPIENT to run a live delivery handoff; inbox receipt still requires provider-side verification.');
 
+    // Clearing every record runs last: it empties the collections the checks above rely on.
+    response=await call('/api/users/admin/reset-data',{method:'POST',token:sessions.patient1,body:{confirm:'DELETE ALL DATA'}});
+    check(response.status===403,'A patient cannot clear the clinic data');
+    response=await call('/api/users/admin/reset-data',{method:'POST',token:sessions.admin,body:{confirm:'delete all data'}});
+    check(response.status===400,'Clearing the data needs the exact confirmation phrase',JSON.stringify(response.data));
+    const beforeCounts={appointments:await Appointment.countDocuments(),users:await User.countDocuments()};
+    response=await call('/api/users/admin/reset-data',{method:'POST',token:sessions.admin,body:{confirm:'DELETE ALL DATA'}});
+    const afterCounts={appointments:await Appointment.countDocuments(),users:await User.countDocuments()};
+    check(response.status===200&&beforeCounts.appointments>0&&afterCounts.appointments===0,'Admin clears every appointment in one call',JSON.stringify({beforeCounts,afterCounts}));
+    check(afterCounts.users===beforeCounts.users,'Clearing the data keeps every user account',JSON.stringify(afterCounts));
+    check(response.data.deleted&&response.data.total>0&&Object.keys(response.data.deleted).length===9,'The clear reports what it removed',JSON.stringify(response.data.deleted));
+    response=await call('/api/users/admin/audit',{token:sessions.admin});
+    check(response.data.logs?.some(log=>log.action==='data.reset'),'The clear itself stays in the audit trail');
+    response=await call('/api/auth/me',{token:sessions.admin});
+    check(response.status===200,'The admin is still logged in after clearing the data');
+
     const passed=results.filter(item=>item.ok).length; const failed=results.filter(item=>!item.ok);
     console.log(`\nQA_RESULT ${JSON.stringify({database:QA_DB,total:results.length,passed,failed:failed.length,skipped:skipped.length,failures:failed,skips:skipped})}`);
     if(failed.length) process.exitCode=1;

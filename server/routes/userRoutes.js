@@ -1,6 +1,6 @@
 const express = require('express');
 const { protect, authorize } = require('../middleware/auth');
-const { updateMe, adminStats, listUsers, createStaff, updateStaff, deactivateStaff, publicDoctors, doctorAvailability, updateAvailability, auditLogs, requestEmailChange, verifyEmailChange, exportAuditLogs, exportMyData, deleteMyAccount, updateNotificationPreferences } = require('../controllers/userController');
+const { updateMe, adminStats, listUsers, createStaff, updateStaff, deactivateStaff, publicDoctors, doctorAvailability, updateAvailability, auditLogs, requestEmailChange, verifyEmailChange, exportAuditLogs, exportMyData, deleteMyAccount, updateNotificationPreferences, resetAllData } = require('../controllers/userController');
 const router = express.Router();
 router.get('/doctors', publicDoctors);
 router.get('/doctors/:id/availability', doctorAvailability);
@@ -18,4 +18,5 @@ router.put('/admin/staff/:id', protect, authorize('admin'), updateStaff);
 router.patch('/admin/staff/:id/toggle', protect, authorize('admin'), deactivateStaff);
 router.get('/admin/audit', protect, authorize('admin'), auditLogs);
 router.get('/admin/audit/export', protect, authorize('admin'), exportAuditLogs);
+router.post('/admin/reset-data', protect, authorize('admin'), resetAllData);
 module.exports = router;
