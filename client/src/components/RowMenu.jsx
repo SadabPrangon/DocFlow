@@ -52,7 +52,11 @@ export default function RowMenu({ items, label = 'Row actions' }) {
     }
   };
 
-  if (!items.length) return <span className="tbl-sub">No action left</span>;
+  // The title sits on the wrapper because a disabled button reports no pointer
+  // events, so its own tooltip would never appear.
+  if (!items.length) return <span className="rowmenu-empty" title="No action left">
+    <button type="button" className="rowmenu-button" disabled aria-label="No action left"><MoreVertical size={15}/></button>
+  </span>;
 
   return <>
     <button

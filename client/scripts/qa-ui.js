@@ -13,7 +13,10 @@ async function mockApi(page) {
     const path = new URL(url).pathname;
     let body = { success: true };
     if (path.endsWith('/users/doctors')) body = { success:true, doctors:[{id:'doctor-1',name:'Dr QA',specialty:'Cardiology',experience:'8 years',location:'QA Clinic',fee:500}] };
-    else if (path.endsWith('/appointments/mine')) body = { success:true, appointments:[{_id:'appointment-queue-1',doctor:'doctor-1',doctorName:'Dr QA',specialty:'Cardiology',location:'QA Clinic',appointmentDate:'2026-08-06',appointmentTime:'10:00',reason:'Follow-up',status:'Approved',queueNumber:7,queueStatus:'Waiting'}] };
+    else if (path.endsWith('/appointments/mine')) body = { success:true, appointments:[
+      {_id:'appointment-queue-1',doctor:'doctor-1',doctorName:'Dr QA',specialty:'Cardiology',location:'QA Clinic',appointmentDate:'2026-08-06',appointmentTime:'10:00',reason:'Follow-up',status:'Approved',queueNumber:7,queueStatus:'Waiting'},
+      {_id:'appointment-done-1',doctor:'doctor-1',doctorName:'Dr QA',specialty:'Cardiology',location:'QA Clinic',appointmentDate:'2026-07-02',appointmentTime:'09:00',reason:'Check-up',status:'Completed',queueNumber:3,queueStatus:'Completed'},
+    ] };
     else if (path.includes('/auth/register/request-otp')) body = { success:true, message:'A 6-digit verification code was sent to your email.', expiresAt:new Date(Date.now()+120000).toISOString() };
     else if (path.includes('/auth/register/verify-otp')) body = { success:true, message:'Email verified.', registrationToken:'qa-token' };
     else if (path.includes('/auth/register/complete')) body = { success:true, message:'Registration successful.', user:{name:'QA'} };
@@ -117,11 +120,15 @@ async function run() {
     check((await page.locator('.tbl th').allInnerTexts()).map(t=>t.trim()).join('|')==='Doctor|Date and time|Queue|Status|Actions', 'Appointments render as a table, not cards');
     check(await page.locator('.tbl th').last().evaluate(el=>el.getBoundingClientRect().width>0&&el.querySelector('.sr-only').getBoundingClientRect().width<=1), 'Actions column keeps a screen-reader name but no visible label');
     check(await page.locator('main article').count()===0, 'No appointment card survives beside the table');
-    const apptRow = (await page.locator('.tbl tbody tr').first().innerText()).split(/\s+/).join(' ');
+    const approvedRow = page.locator('.tbl tbody tr',{has:page.locator('.pill',{hasText:'Approved'})});
+    const apptRow = (await approvedRow.innerText()).split(/\s+/).join(' ');
     check(apptRow.includes('Dr QA')&&apptRow.includes('#7')&&apptRow.includes('Approved'), 'Appointment row carries doctor, queue number and status', apptRow);
     check(!apptRow.includes('Follow-up'), 'Reason column is gone from the table', apptRow);
+    const doneMenu = page.locator('.tbl tbody tr',{has:page.locator('.pill',{hasText:'Completed'})}).locator('.rowmenu-button');
+    check(await doneMenu.isDisabled(), 'A finished appointment shows a disabled dots button');
+    check(await doneMenu.evaluate(el=>el.parentElement.getAttribute('title'))==='No action left', 'The disabled dots button explains itself on hover');
     check(await page.locator('.rowmenu-list').count()===0, 'Row actions stay hidden until the dots menu is opened');
-    await page.locator('.rowmenu-button').first().click();
+    await approvedRow.locator('.rowmenu-button').click();
     check((await page.locator('.rowmenu-item').allInnerTexts()).map(t=>t.trim()).join('|')==='Live queue|Reschedule|Cancel', 'Dots menu offers live queue, reschedule and cancel');
     await page.locator('.rowmenu-item',{hasText:'Reschedule'}).click();
     check(await page.locator('.rowmenu-list').count()===0, 'Choosing an action closes the dots menu');
