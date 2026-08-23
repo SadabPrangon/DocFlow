@@ -1,4 +1,4 @@
-import { CalendarClock, CheckCircle2, Clock3, Radio, Search, TriangleAlert, XCircle } from 'lucide-react';
+import { CalendarClock, CalendarPlus, CheckCircle2, Clock3, CreditCard, Radio, Search, TriangleAlert, XCircle } from 'lucide-react';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import Dropdown from '../components/Dropdown';
 import PageHeader from '../components/PageHeader';
@@ -45,6 +45,15 @@ export default function MyAppointments() {
     if (!confirm('Cancel this appointment?')) return;
     try { const { data } = await api.put(`/appointments/${id}/cancel`, { reason: 'Cancelled by patient' }); setMsg(data.message); load(); }
     catch (error) { setMsg(error.response?.data?.message || 'Unable to cancel.'); }
+  };
+  const calendar = async (appointment) => {
+    const response = await api.get(`/appointments/${appointment._id}/calendar`, { responseType: 'blob' });
+    const url = URL.createObjectURL(response.data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `docflow-${appointment.appointmentDate}.ics`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
   const reschedule = async (event) => {
     event.preventDefault();
@@ -98,6 +107,7 @@ export default function MyAppointments() {
               <th scope="col">Doctor</th>
               <th scope="col">Date and time</th>
               <th scope="col">Queue</th>
+              <th scope="col">Payment</th>
               <th scope="col">Status</th>
               <th scope="col" className="tbl-end"><span className="sr-only">Actions</span></th>
             </tr>
@@ -108,6 +118,7 @@ export default function MyAppointments() {
               // Only an appointment that has not started yet can still be moved.
               const changeable = ['Pending', 'Approved'].includes(appointment.status) && !appointment.isCurrentServing;
               const queueable = appointment.status === 'Approved';
+              const paid = appointment.paymentStatus === 'Paid';
               return <Fragment key={appointment._id}>
                 <tr>
                   <td>
@@ -124,19 +135,24 @@ export default function MyAppointments() {
                       : <span className="tbl-sub">Not queued</span>}
                   </td>
                   <td>
+                    <span className={`pill ${paid ? 'ok' : ''}`}>{paid ? <CheckCircle2 size={12}/> : <CreditCard size={12}/>}{paid ? 'Paid' : 'Not paid'}</span>
+                    <div className="tbl-sub">{appointment.paymentMethod === 'online' ? 'Online' : 'Cash'}</div>
+                  </td>
+                  <td>
                     <span className={`pill ${state}`}><Icon size={12}/>{appointment.status}</span>
                   </td>
                   <td className="tbl-end">
                     <RowMenu label={`Actions for the ${appointment.appointmentDate} appointment with ${appointment.doctorName}`} items={[
                       ...(queueable ? [{ label: 'Live queue', icon: <Radio size={14}/>, to: `/live-queue/${appointment._id}` }] : []),
                       ...(changeable ? [{ label: 'Reschedule', icon: <CalendarClock size={14}/>, onClick: () => { setEditing(editing === appointment._id ? null : appointment._id); setForm({ appointmentDate: '' }); } }] : []),
+                      ...(changeable ? [{ label: 'Add to calendar', icon: <CalendarPlus size={14}/>, onClick: () => calendar(appointment) }] : []),
                       ...(changeable ? [{ label: 'Cancel', icon: <XCircle size={14}/>, tone: 'danger', onClick: () => cancel(appointment._id) }] : []),
                     ]}/>
                   </td>
                 </tr>
 
                 {editing === appointment._id && <tr className="tbl-edit">
-                  <td colSpan={5}>
+                  <td colSpan={6}>
                     <form onSubmit={reschedule} className="tbl-form">
                       <label>New date
                         <input required min={localDate()} type="date" value={form.appointmentDate} onChange={(event) => setForm({ appointmentDate: event.target.value })}/>
