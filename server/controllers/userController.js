@@ -14,9 +14,14 @@ const validEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const strongPassword = (password) => typeof password === 'string' && password.length >= 8 && /[a-z]/.test(password) && /[A-Z]/.test(password) && /\d/.test(password);
 const hashValue = (value) => crypto.createHmac('sha256', process.env.OTP_SECRET || process.env.JWT_SECRET).update(String(value)).digest('hex');
 
+// Only a bitmap data URL is ever accepted, so nothing that could be rendered as
+// markup can reach an img src. The cap sits under the 100kb JSON body limit.
+const AVATAR_PATTERN = /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/]+={0,2}$/;
+const MAX_AVATAR = 80000;
+
 const updateMe = async (req, res) => {
   try {
-    const { name, email, phone, age, gender, address } = req.body;
+    const { name, email, phone, age, gender, address, designation, avatar } = req.body;
     if (typeof name !== 'string' || typeof email !== 'string' || !name.trim() || !email.trim()) return res.status(400).json({ success: false, message: 'Name and email are required.' });
     const normalizedEmail = email.trim().toLowerCase();
     if (!validEmail(normalizedEmail)) return res.status(400).json({ success: false, message: 'Enter a valid email address.' });
@@ -28,18 +33,24 @@ const updateMe = async (req, res) => {
     const duplicate = await User.findOne({ email: normalizedEmail, _id: { $ne: req.user._id } });
     if (duplicate) return res.status(409).json({ success: false, message: 'Email is already used.' });
 
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      {
-        name: name.trim(),
-        email: normalizedEmail,
-        phone: (phone || '').trim(),
-        age: normalizedAge,
-        gender: gender || '',
-        address: (address || '').trim(),
-      },
-      { new: true, runValidators: true }
-    );
+    const updates = {
+      name: name.trim(),
+      email: normalizedEmail,
+      phone: (phone || '').trim(),
+      age: normalizedAge,
+      gender: gender || '',
+      address: (address || '').trim(),
+      designation: String(designation || '').trim().slice(0, 80),
+    };
+    if (avatar !== undefined) {
+      const picture = String(avatar || '');
+      if (picture && (picture.length > MAX_AVATAR || !AVATAR_PATTERN.test(picture))) {
+        return res.status(400).json({ success: false, message: 'Choose a smaller JPEG, PNG or WebP picture.' });
+      }
+      updates.avatar = picture;
+    }
+
+    const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true, runValidators: true });
     res.json({ success: true, message: 'Profile updated successfully.', user: publicUser(user) });
   } catch (error) {
     console.error('Update profile error:', error);

@@ -476,3 +476,20 @@ input:focus, select:focus, textarea:focus {
   .set-grid, .set-form { grid-template-columns: 1fr; }
   .set-row { flex-direction: column; align-items: flex-start; }
 }
+
+/* Profile picture and the edit form fields. */
+.set-avatar { overflow: hidden; }
+.set-avatar img { height: 100%; width: 100%; object-fit: cover; }
+.set-avatar.edit { position: relative; border: 0; padding: 0; }
+.set-avatar-badge { position: absolute; right: -3px; bottom: -3px; display: grid; height: 20px; width: 20px; place-items: center; border: 2px solid var(--surface); border-radius: 999px !important; background: var(--brand); color: #fff; }
+.set-avatar.edit:hover { box-shadow: 0 0 0 3px var(--brand-tint); }
+.set-required { color: var(--danger); }
+.set-readonly { display: grid; gap: .3rem; }
+.set-readonly small { font-weight: 700; color: var(--ink); }
+.set-readonly b { padding: .55rem 0; color: var(--muted); }
+.set-readonly i { color: #a8a8a8; }
+.set-phone { display: grid; gap: .4rem; grid-template-columns: 6.5rem 1fr; }
+.set-phone select, .set-phone input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: .55rem .65rem; }
+.dark-mode .set-phone select, .dark-mode .set-phone input { border-color: var(--elevated); background: var(--elevated); }
+.dark-mode .set-avatar-badge { border-color: var(--surface); }
+.set-identity > .set-inline { margin-left: auto; }

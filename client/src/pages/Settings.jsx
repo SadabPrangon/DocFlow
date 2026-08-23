@@ -1,5 +1,5 @@
-import { AlertTriangle, Bell, Download, LogOut, ShieldCheck, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { AlertTriangle, Bell, Camera, Download, LogOut, ShieldCheck, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import api from '../lib/api';
@@ -7,6 +7,34 @@ import { clearAuth, getUser } from '../lib/auth';
 
 const initials = (name) => String(name || '?').trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 const blank = 'Add this in Edit';
+
+const DIAL_CODES = ['+880', '+91', '+1', '+44', '+61', '+65', '+971', '+966'];
+const splitPhone = (phone) => {
+  const value = String(phone || '').trim();
+  const code = DIAL_CODES.find((dial) => value.startsWith(dial));
+  return code ? { code, number: value.slice(code.length) } : { code: '+880', number: value.replace(/^\+/, '') };
+};
+
+// Resized and re-encoded in the browser, so a 4MB camera photo becomes a ~10KB
+// square that fits inside the API's 100kb JSON body limit.
+const AVATAR_PX = 192;
+const toAvatar = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onerror = () => reject(new Error('That file could not be read.'));
+  reader.onload = () => {
+    const image = new Image();
+    image.onerror = () => reject(new Error('That file is not an image.'));
+    image.onload = () => {
+      const side = Math.min(image.width, image.height);
+      const canvas = document.createElement('canvas');
+      canvas.width = AVATAR_PX; canvas.height = AVATAR_PX;
+      canvas.getContext('2d').drawImage(image, (image.width - side) / 2, (image.height - side) / 2, side, side, 0, 0, AVATAR_PX, AVATAR_PX);
+      resolve(canvas.toDataURL('image/jpeg', 0.75));
+    };
+    image.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
 
 // Sessions store the raw user agent. Shown as-is it is a 100-character wall of text,
 // so it is reduced to the two things a patient needs to recognise the device by.
@@ -39,6 +67,7 @@ export default function Settings() {
   const [confirming, setConfirming] = useState(false);
   const [prefs, setPrefs] = useState(user?.notificationPreferences || { emailReminders: true, smsReminders: false, reminderHoursBefore: 24 });
   const [note, setNote] = useState(null);
+  const fileRef = useRef(null);
 
   const say = (text, tone = 'ok') => setNote({ text, tone });
   const fail = (error, fallback) => say(error.response?.data?.message || fallback, 'error');
@@ -53,16 +82,38 @@ export default function Settings() {
   }, []);
 
   const startEdit = () => {
-    setForm({ name: user?.name || '', phone: user?.phone || '', age: user?.age || '', gender: user?.gender || '', address: user?.address || '' });
+    const phone = splitPhone(user?.phone);
+    setForm({
+      name: user?.name || '', designation: user?.designation || '', dialCode: phone.code, phoneNumber: phone.number,
+      age: user?.age || '', gender: user?.gender || '', address: user?.address || '', avatar: user?.avatar || '',
+    });
     setEditing(true);
     setNote(null);
   };
 
+  const pickAvatar = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (!/^image\//.test(file.type)) return say('Choose an image file.', 'error');
+    try {
+      const avatar = await toAvatar(file);
+      if (avatar.length > 80000) return say('That picture is too detailed to store. Try a simpler one.', 'error');
+      setForm((current) => ({ ...current, avatar }));
+    } catch (error) { say(error.message, 'error'); }
+  };
+
   const saveProfile = async (event) => {
     event.preventDefault();
+    const digits = String(form.phoneNumber || '').replace(/\D/g, '');
     try {
       // The server rejects an email change here on purpose, so the current one is sent back.
-      const { data } = await api.put('/users/me', { ...form, email: user.email });
+      const { data } = await api.put('/users/me', {
+        name: form.name, designation: form.designation, age: form.age, gender: form.gender,
+        address: form.address, avatar: form.avatar,
+        phone: digits ? `${form.dialCode}${digits}` : '',
+        email: user.email,
+      });
       store(data.user);
       setEditing(false);
       say(data.message);
@@ -122,7 +173,7 @@ export default function Settings() {
   };
 
   const tabs = [['profile', 'Profile'], ...(user?.role === 'patient' ? [['notifications', 'Notifications']] : []), ['security', 'Security']];
-  const designation = user?.role === 'doctor' ? user?.specialty : user?.role;
+  const designation = user?.designation || (user?.role === 'doctor' ? user?.specialty : '');
 
   return <div className="min-h-screen bg-slate-100">
     <PageHeader title="Settings"/>
@@ -135,32 +186,42 @@ export default function Settings() {
 
       {tab === 'profile' && <>
         <section className="set-card">
-          <div className="set-identity">
-            <span className="set-avatar">{initials(user?.name)}</span>
-            <span className="set-identity-copy">
-              <b>{user?.name}</b>
-              <small>{user?.email}</small>
-            </span>
-            {!editing && <button type="button" onClick={startEdit} className="set-button">Edit</button>}
-          </div>
-
-          {editing ? <form onSubmit={saveProfile} className="set-form">
-            <label>Full name<input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required/></label>
-            <label>Phone number<input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+8801XXXXXXXXX"/></label>
-            <label>Age<input type="number" min="1" max="120" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })}/></label>
-            <label>Gender<select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })}><option value="">Not specified</option><option>Male</option><option>Female</option><option>Other</option></select></label>
-            <label className="set-form-wide">Address<input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })}/></label>
-            <div className="set-form-actions">
-              <button type="button" onClick={() => setEditing(false)} className="set-button">Cancel</button>
-              <button type="submit" className="set-button primary">Save changes</button>
+          <form onSubmit={saveProfile}>
+            <div className="set-identity">
+              {editing ? <button type="button" className="set-avatar edit" onClick={() => fileRef.current?.click()} title="Change profile picture">
+                {form.avatar ? <img src={form.avatar} alt=""/> : initials(user?.name)}
+                <span className="set-avatar-badge"><Camera size={12}/></span>
+              </button> : <span className="set-avatar">{user?.avatar ? <img src={user.avatar} alt=""/> : initials(user?.name)}</span>}
+              <input ref={fileRef} type="file" accept="image/*" onChange={pickAvatar} hidden/>
+              <span className="set-identity-copy">
+                <b>{user?.name}</b>
+                <small>{user?.email}</small>
+              </span>
+              {editing ? <span className="set-inline">
+                <button type="button" onClick={() => setEditing(false)} className="set-button">Cancel</button>
+                <button type="submit" className="set-button primary">Update</button>
+              </span> : <button type="button" onClick={startEdit} className="set-button">Edit</button>}
             </div>
-          </form> : <div className="set-grid">
-            <span><small>Designation</small>{designation ? <b>{designation}</b> : <i>{blank}</i>}</span>
-            <span><small>Phone number</small>{user?.phone ? <b>{user.phone}</b> : <i>{blank}</i>}</span>
-            <span><small>Age</small>{user?.age ? <b>{user.age}</b> : <i>{blank}</i>}</span>
-            <span><small>Gender</small>{user?.gender ? <b>{user.gender}</b> : <i>{blank}</i>}</span>
-            <span className="set-grid-wide"><small>Address</small>{user?.address ? <b>{user.address}</b> : <i>{blank}</i>}</span>
-          </div>}
+
+            {editing ? <div className="set-form">
+              <label><span>Full Name <b className="set-required">*</b></span><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required/></label>
+              <span className="set-readonly"><small>Email Address</small><b>{user?.email}</b><i>Change it from Security, with a verification code.</i></span>
+              <label>Designation<input value={form.designation} onChange={(e) => setForm({ ...form, designation: e.target.value })} placeholder={user?.role === 'doctor' ? 'e.g. Consultant Cardiologist' : 'e.g. Software Engineer'}/></label>
+              <label>Phone number<span className="set-phone">
+                <select value={form.dialCode} onChange={(e) => setForm({ ...form, dialCode: e.target.value })}>{DIAL_CODES.map((code) => <option key={code}>{code}</option>)}</select>
+                <input value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} placeholder="1760533424" inputMode="numeric"/>
+              </span></label>
+              <label>Age<input type="number" min="1" max="120" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })}/></label>
+              <label>Gender<select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })}><option value="">Not specified</option><option>Male</option><option>Female</option><option>Other</option></select></label>
+              <label className="set-form-wide">Address<input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })}/></label>
+            </div> : <div className="set-grid">
+              <span><small>Designation</small>{designation ? <b>{designation}</b> : <i>{blank}</i>}</span>
+              <span><small>Phone number</small>{user?.phone ? <b>{user.phone}</b> : <i>{blank}</i>}</span>
+              <span><small>Age</small>{user?.age ? <b>{user.age}</b> : <i>{blank}</i>}</span>
+              <span><small>Gender</small>{user?.gender ? <b>{user.gender}</b> : <i>{blank}</i>}</span>
+              <span className="set-grid-wide"><small>Address</small>{user?.address ? <b>{user.address}</b> : <i>{blank}</i>}</span>
+            </div>}
+          </form>
         </section>
 
         <section className="set-card danger">

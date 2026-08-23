@@ -16,6 +16,10 @@ const userSchema = new mongoose.Schema(
     dateOfBirth: { type: Date, default: null },
     gender: { type: String, default: '' },
     address: { type: String, default: '', trim: true },
+    designation: { type: String, default: '', trim: true, maxlength: 80 },
+    // A small square data URL, written only through the validated path in
+    // userController. Kept on the document so there is no file store to run.
+    avatar: { type: String, default: '', maxlength: 90000 },
     specialty: { type: String, default: '', trim: true },
     experience: { type: String, default: '', trim: true },
     location: { type: String, default: '', trim: true },

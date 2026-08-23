@@ -36,6 +36,8 @@ const publicUser = (user) => ({
   dateOfBirth: user.dateOfBirth || '',
   gender: user.gender || '',
   address: user.address || '',
+  designation: user.designation || '',
+  avatar: user.avatar || '',
   specialty: user.specialty || '',
   experience: user.experience || '',
   location: user.location || '',
