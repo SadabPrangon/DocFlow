@@ -113,7 +113,7 @@ async function run() {
 
     check(await page.locator('.sidebar-nav').getByRole('link',{name:'Medical records'}).isVisible(), 'Patient sidebar exposes medical records');
     check(await page.locator('.sidebar-nav').getByRole('link',{name:'Messages'}).isVisible(), 'Patient sidebar exposes secure messages');
-    check(await page.locator('.sidebar-nav').getByRole('link',{name:'Payments & calendar'}).isVisible(), 'Patient sidebar exposes payments and calendar');
+    check(await page.locator('.sidebar-nav').getByRole('link',{name:'Payments & calendar'}).count()===0, 'Payments and calendar is no longer in the patient sidebar');
     check(await page.locator('.sidebar-nav').getByRole('link',{name:'Live Queue',exact:true}).isVisible(), 'Patient sidebar exposes live queue');
     await page.goto(`${BASE}/live-queue`,{waitUntil:'networkidle'});
     check((await page.locator('.app-topbar h2').innerText()).trim()==='Live Queue', 'Live-queue selection workspace renders');
