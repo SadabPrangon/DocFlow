@@ -12,9 +12,7 @@ const patientNav = [
   ['/medical-records', FileHeart, 'Medical records'],
   ['/messages', MessageSquare, 'Messages'],
   ['/payments', CreditCard, 'Payments & calendar'],
-  ['/notification-settings', Bell, 'Notifications'],
   ['/ai-recommendation', Bot, 'Care assistant'],
-  ['/profile', UserRound, 'My profile'],
 ];
 const doctorNav = [['/doctor-dashboard', LayoutDashboard, 'Dashboard'], ['/clinical-workspace', FileHeart, 'Clinical workspace'], ['/messages', MessageSquare, 'Messages'], ['/availability', CalendarDays, 'Availability']];
 const adminNav = [['/admin-dashboard', LayoutDashboard, 'Dashboard'], ['/reports', FileHeart, 'Reports'], ['/operations', CalendarDays, 'Operations'], ['/audit', LockKeyhole, 'Audit log']];
@@ -71,7 +69,7 @@ export default function PageHeader({ title, backTo }) {
     <div className="sidebar-mobile">
       <div className="flex items-center gap-3">{backTo && <Link to={backTo} aria-label="Go back" className="mobile-icon-button"><ArrowLeft size={18}/></Link>}<Link to={home} className="flex items-center gap-2.5"><span className="brand-mark"><Stethoscope size={18}/></span><span className="font-extrabold tracking-tight">DocFlow</span></Link></div>
       <button aria-label={mobileOpen ? 'Close menu' : 'Open menu'} onClick={() => setMobileOpen(value => !value)} className="mobile-icon-button">{mobileOpen ? <X size={18}/> : <Menu size={18}/>}</button>
-      <nav className="mobile-menu" aria-label="Mobile navigation">{nav.map(([to, Icon, label]) => <Link key={to} to={to} onClick={() => setMobileOpen(false)} className={`mobile-menu-link ${active(to) ? 'active' : ''}`}><Icon size={16}/>{label}</Link>)}</nav>
+      <nav className="mobile-menu" aria-label="Mobile navigation">{[...nav, ['/settings', SlidersHorizontal, 'Settings']].map(([to, Icon, label]) => <Link key={to} to={to} onClick={() => setMobileOpen(false)} className={`mobile-menu-link ${active(to) ? 'active' : ''}`}><Icon size={16}/>{label}</Link>)}</nav>
     </div>
   </aside>
   <header className="app-topbar">

@@ -397,10 +397,9 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Settings pinned to the foot of the sidebar, plus the settings page rows. */
-.sidebar-footer { margin-top: auto; border-top: 1px solid var(--line); padding-top: .7rem; }
+.sidebar-footer { margin-top: auto; padding-top: .7rem; }
 .sidebar-footer .nav-pill { width: 100%; padding: .75rem .8rem; }
 .saas-header.collapsed .sidebar-footer .nav-pill { justify-content: center; padding-inline: 0; }
-.dark-mode .sidebar-footer { border-color: var(--line); }
 .settings-theme { display: inline-flex; align-items: center; gap: .4rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .5rem .8rem; font-weight: 700; color: var(--muted); }
 .settings-theme:hover { border-color: var(--brand-line); color: var(--brand); }
 .settings-theme.active { border-color: var(--brand); background: var(--brand-tint); color: var(--brand); }
