@@ -755,3 +755,10 @@ input:focus, select:focus, textarea:focus {
 .cons-minutes input[aria-invalid="true"] { border-color: var(--danger); }
 .cons-hint.bad { color: var(--danger); }
 .dark-mode .cons-minutes input { border-color: var(--elevated); background: var(--elevated); }
+
+/* The schedule saves from its own header, so the button is where the doctor
+   already is when they change the hours. */
+.sched-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
+.sched-save { display: flex; align-items: center; gap: .75rem; }
+.sched-button { border: 1px solid var(--brand); border-radius: 8px; background: var(--brand); padding: .55rem 1.1rem; font-weight: 700; color: #fff; }
+.sched-button:hover { border-color: var(--brand-dark); background: var(--brand-dark); }

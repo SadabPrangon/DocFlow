@@ -27,6 +27,7 @@ async function mockApi(page) {
     else if (path.includes('/clinical/history/mine')) body = { success:true, records:[], prescriptions:[] };
     else if (path.includes('/payments/mine')) body = { success:true, payments:[] };
     else if (path.includes('/appointments/reports/summary')) body = { success:true, report:{byStatus:[],byDoctor:[],revenue:{total:0,count:0}} };
+    else if (path.includes('/users/me/availability')) body = { success:true, message:'Availability updated.', availability:{timezone:'Asia/Dhaka',slotDuration:45,weekly:Array.from({length:7},(_,day)=>({day,enabled:day>0&&day<6,start:'09:00',end:'17:00'})),unavailableDates:[],overrides:[]} };
     else if (path.includes('/auth/me')) body = { success:true, user:{name:'QA Doctor',email:'doctor@qa.test',role:'doctor',availability:{weekly:[],overrides:[]}} };
     else if (path.includes('/ai/conversations')) body = { success:true, conversations:[] };
     else if (path.includes('/ai/recommend')) body = { success:true, conversationId:'conv-1', title:'skin rash', source:'qa', urgent:false, specialty:'Dermatology', reply:'You should see a Dermatology doctor for a spreading rash.', recommendations:[{doctorId:'doctor-1',name:'Dr QA',specialty:'Dermatology',location:'QA Clinic',fee:500,date:'2026-08-24',day:'Monday',time:'9:00 AM',why:'Earliest dermatology slot.'}] };
@@ -176,6 +177,11 @@ async function run() {
     await page.locator('.cons-label').click();
     await page.waitForTimeout(200);
     check(await minutes.inputValue()==='45', 'A field left empty falls back to the length that was set', await minutes.inputValue());
+    check(!(await page.locator('main').innerText()).includes('Availability updated'), 'The schedule page carries no confirmation banner');
+    check(await page.getByRole('button',{name:/Save/}).count()===1&&(await page.locator('.sched-head').innerText()).includes('Save schedule'), 'The schedule saves from a button in its own header', await page.locator('.sched-head').innerText());
+    await page.locator('.sched-button').click();
+    await page.waitForTimeout(250);
+    check((await page.locator('.sched-button').innerText()).trim()==='Saved', 'The save button reports back instead of a banner', await page.locator('.sched-button').innerText());
     await page.evaluate(()=>{localStorage.setItem('user',JSON.stringify({id:'admin-1',name:'QA Admin',email:'admin@qa.test',role:'admin'}));history.pushState({},'', '/reports');dispatchEvent(new PopStateEvent('popstate'))});
     await page.waitForTimeout(300);
     check((await page.locator('.app-topbar h2').innerText()).trim()==='Reports', 'Admin reporting workspace renders', `${page.url()} — ${(await page.locator('body').innerText()).slice(0,120)}`);
