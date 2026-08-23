@@ -495,3 +495,45 @@ input:focus, select:focus, textarea:focus {
 .set-identity > .set-inline { margin-left: auto; }
 .sidebar-avatar { overflow: hidden; }
 .sidebar-avatar img { height: 100%; width: 100%; object-fit: cover; }
+
+/* App shell: the content area is an inset panel floating on a gutter, with the
+   topbar forming its head. Only wrappers that actually contain the sidebar are
+   reframed, so the three centred auth pages keep their full-bleed background. */
+:root { --gutter: 12px; --shell: #e8ebef; }
+.dark-mode { --shell: #0b0b0b; }
+
+.bg-slate-100:has(> .saas-header) { background-color: var(--shell) !important; }
+.saas-header { border-right: 0; background: transparent; backdrop-filter: none; }
+.sidebar-brand-row { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .5rem .55rem; }
+
+.saas-header ~ * {
+  width: calc(100% - 264px - var(--gutter) * 2);
+  margin-left: calc(264px + var(--gutter)) !important;
+  margin-right: var(--gutter) !important;
+}
+.saas-header.collapsed ~ * { width: calc(100% - 82px - var(--gutter) * 2); margin-left: calc(82px + var(--gutter)) !important; }
+.app-topbar { top: var(--gutter); margin-top: var(--gutter); border-radius: 8px 8px 0 0; background: var(--surface); }
+.saas-header ~ *:not(.app-topbar) {
+  min-height: calc(100dvh - 72px - var(--gutter) * 2);
+  margin-bottom: var(--gutter) !important;
+  border-radius: 0 0 8px 8px;
+  background: var(--canvas);
+}
+.chat-shell { height: calc(100dvh - 72px - var(--gutter) * 2); }
+
+.dark-mode .saas-header { border-color: transparent; background: transparent; }
+.dark-mode .app-topbar { background: var(--surface); }
+.dark-mode .sidebar-brand-row { border-color: var(--line); background: var(--surface); }
+
+@media (max-width: 767px) {
+  :root { --gutter: 0px; }
+  .bg-slate-100:has(> .saas-header) { background-color: var(--canvas) !important; }
+  /* These repeat the earlier mobile reset because the desktop rules above are
+     later in the file and would otherwise reinstate the sidebar offset. */
+  .saas-header ~ *, .saas-header.collapsed ~ * { width: 100%; margin-left: 0 !important; margin-right: 0 !important; }
+  .saas-header ~ *:not(.app-topbar) { margin-bottom: 0 !important; min-height: 0; }
+  .app-topbar { top: 0; margin-top: 0 !important; }
+  .app-topbar, .saas-header ~ *:not(.app-topbar) { border-radius: 0; }
+  .sidebar-brand-row { border: 0; background: transparent; padding: 0; }
+}
+.sidebar-footer { display: flex; flex-direction: column; gap: .25rem; }

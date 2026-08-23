@@ -1,4 +1,4 @@
-import { ArrowLeft, Bell, Bot, CalendarDays, ChevronDown, ChevronRight, CreditCard, FileHeart, LayoutDashboard, LockKeyhole, LogOut, Menu, MessageSquare, Moon, PanelLeftClose, PanelLeftOpen, Radio, SlidersHorizontal, Stethoscope, Sun, UserRound, X } from 'lucide-react';
+import { ArrowLeft, Bell, Bot, CalendarDays, ChevronDown, ChevronRight, CreditCard, FileHeart, LayoutDashboard, LockKeyhole, LogOut, Menu, MessageSquare, Moon, PanelLeftClose, PanelLeftOpen, LifeBuoy, Radio, SlidersHorizontal, Stethoscope, Sun, UserRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clearAuth, dashboardFor, getUser } from '../lib/auth';
@@ -66,13 +66,14 @@ export default function PageHeader({ title, backTo }) {
       <div className="sidebar-brand-row"><Link to={home} className="sidebar-brand" title={collapsed ? 'DocFlow' : undefined}><span className="brand-mark"><Stethoscope size={20}/></span><span className="sidebar-copy text-lg font-extrabold tracking-tight text-slate-900">DocFlow</span></Link><button onClick={toggleSidebar} className="sidebar-toggle" aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>{collapsed ? <PanelLeftOpen size={18}/> : <PanelLeftClose size={18}/>}</button></div>
       <nav className="sidebar-nav" aria-label="Main navigation">{nav.map(([to, Icon, label]) => <Link key={to} to={to} title={collapsed ? label : undefined} className={`nav-pill ${active(to) ? 'active' : ''}`}><Icon size={18}/><span className="sidebar-copy">{label}</span>{active(to) && <ChevronRight className="sidebar-copy ml-auto" size={15}/>}</Link>)}</nav>
       <div className="sidebar-footer">
+        <Link to="/help" title={collapsed ? 'Help & Support' : undefined} className={`nav-pill ${active('/help') ? 'active' : ''}`}><LifeBuoy size={18}/><span className="sidebar-copy">Help & Support</span>{active('/help') && <ChevronRight className="sidebar-copy ml-auto" size={15}/>}</Link>
         <Link to="/settings" title={collapsed ? 'Settings' : undefined} className={`nav-pill ${active('/settings') ? 'active' : ''}`}><SlidersHorizontal size={18}/><span className="sidebar-copy">Settings</span>{active('/settings') && <ChevronRight className="sidebar-copy ml-auto" size={15}/>}</Link>
       </div>
     </div>
     <div className="sidebar-mobile">
       <div className="flex items-center gap-3">{backTo && <Link to={backTo} aria-label="Go back" className="mobile-icon-button"><ArrowLeft size={18}/></Link>}<Link to={home} className="flex items-center gap-2.5"><span className="brand-mark"><Stethoscope size={18}/></span><span className="font-extrabold tracking-tight">DocFlow</span></Link></div>
       <button aria-label={mobileOpen ? 'Close menu' : 'Open menu'} onClick={() => setMobileOpen(value => !value)} className="mobile-icon-button">{mobileOpen ? <X size={18}/> : <Menu size={18}/>}</button>
-      <nav className="mobile-menu" aria-label="Mobile navigation">{[...nav, ['/settings', SlidersHorizontal, 'Settings']].map(([to, Icon, label]) => <Link key={to} to={to} onClick={() => setMobileOpen(false)} className={`mobile-menu-link ${active(to) ? 'active' : ''}`}><Icon size={16}/>{label}</Link>)}</nav>
+      <nav className="mobile-menu" aria-label="Mobile navigation">{[...nav, ['/settings', SlidersHorizontal, 'Settings'], ['/help', LifeBuoy, 'Help & Support']].map(([to, Icon, label]) => <Link key={to} to={to} onClick={() => setMobileOpen(false)} className={`mobile-menu-link ${active(to) ? 'active' : ''}`}><Icon size={16}/>{label}</Link>)}</nav>
     </div>
   </aside>
   <header className="app-topbar">
