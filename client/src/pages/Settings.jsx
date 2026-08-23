@@ -71,7 +71,11 @@ export default function Settings() {
 
   const say = (text, tone = 'ok') => setNote({ text, tone });
   const fail = (error, fallback) => say(error.response?.data?.message || fallback, 'error');
-  const store = (next) => { setUser(next); localStorage.setItem('user', JSON.stringify(next)); };
+  const store = (next) => {
+    setUser(next);
+    localStorage.setItem('user', JSON.stringify(next));
+    window.dispatchEvent(new CustomEvent('docflow-user'));
+  };
 
   useEffect(() => {
     api.get('/auth/me').then(({ data }) => {

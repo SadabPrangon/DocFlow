@@ -28,7 +28,7 @@ export default function PageHeader({ title, backTo }) {
   const [dark, setDark] = useState(() => localStorage.getItem('docflow-theme') === 'dark');
   const navigate = useNavigate();
   const location = useLocation();
-  const user = getUser();
+  const [user, setUser] = useState(getUser());
   const home = dashboardFor(user?.role);
   const nav = user?.role === 'patient' ? patientNav : user?.role === 'doctor' ? doctorNav : user?.role === 'admin' ? adminNav : user?.role === 'receptionist' ? receptionistNav : [[home, LayoutDashboard, 'Dashboard']];
   const active = to => location.pathname === to || (to !== home && location.pathname.startsWith(`${to}/`));
@@ -41,6 +41,14 @@ export default function PageHeader({ title, backTo }) {
     document.documentElement.classList.toggle('dark-mode', dark);
     localStorage.setItem('docflow-theme', dark ? 'dark' : 'light');
   }, [dark]);
+  // Saving on the settings page writes to localStorage, which this already-mounted
+  // header would otherwise not notice until a navigation remounted it.
+  useEffect(() => {
+    const refresh = () => setUser(getUser());
+    window.addEventListener('docflow-user', refresh);
+    return () => window.removeEventListener('docflow-user', refresh);
+  }, []);
+
   useEffect(() => {
     let active = true;
     const load = () => api.get('/notifications?limit=8').then(({ data }) => { if (active) { setNotifications(data.notifications); setUnread(data.unread); } }).catch(() => {});
@@ -77,11 +85,11 @@ export default function PageHeader({ title, backTo }) {
       </div>
       <div className="profile-menu-wrap">
         <button onClick={() => { setProfileOpen(value => !value); setNotificationOpen(false); }} className="topbar-profile" aria-expanded={profileOpen}>
-          <span className="sidebar-avatar"><UserRound size={17}/></span>
+          <span className="sidebar-avatar">{user?.avatar ? <img src={user.avatar} alt=""/> : <UserRound size={17}/>}</span>
           <ChevronDown className={`profile-chevron ${profileOpen ? 'rotate-180' : ''}`} size={15}/>
         </button>
         {profileOpen && <div className="profile-dropdown">
-          <div className="flex items-center gap-3 border-b border-slate-100 px-3 py-3"><span className="sidebar-avatar"><UserRound size={17}/></span><span className="min-w-0"><p className="truncate text-sm font-bold text-slate-800">{user?.name || 'DocFlow user'}</p><p className="truncate text-xs text-slate-500">{user?.email || user?.role}</p></span></div>
+          <div className="flex items-center gap-3 border-b border-slate-100 px-3 py-3"><span className="sidebar-avatar">{user?.avatar ? <img src={user.avatar} alt=""/> : <UserRound size={17}/>}</span><span className="min-w-0"><p className="truncate text-sm font-bold text-slate-800">{user?.name || 'DocFlow user'}</p><p className="truncate text-xs text-slate-500">{user?.email || user?.role}</p></span></div>
           {user?.role === 'patient' && <Link to="/profile" onClick={() => setProfileOpen(false)}><UserRound size={16}/>View profile</Link>}
           {user?.role === 'doctor' && <Link to="/availability" onClick={() => setProfileOpen(false)}><CalendarDays size={16}/>Schedule & availability</Link>}
           {user?.role === 'admin' && <Link to="/audit" onClick={() => setProfileOpen(false)}><LayoutDashboard size={16}/>Audit log & export</Link>}

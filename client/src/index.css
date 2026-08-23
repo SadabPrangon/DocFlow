@@ -493,3 +493,5 @@ input:focus, select:focus, textarea:focus {
 .dark-mode .set-phone select, .dark-mode .set-phone input { border-color: var(--elevated); background: var(--elevated); }
 .dark-mode .set-avatar-badge { border-color: var(--surface); }
 .set-identity > .set-inline { margin-left: auto; }
+.sidebar-avatar { overflow: hidden; }
+.sidebar-avatar img { height: 100%; width: 100%; object-fit: cover; }
