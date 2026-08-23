@@ -1,8 +1,8 @@
 import { CalendarClock, CheckCircle2, Clock3, Pill, Radio, Search, TriangleAlert, XCircle } from 'lucide-react';
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import Dropdown from '../components/Dropdown';
 import PageHeader from '../components/PageHeader';
+import RowMenu from '../components/RowMenu';
 import api from '../lib/api';
 
 const key = (item) => `${item.appointmentDate} ${item.appointmentTime}`;
@@ -98,10 +98,9 @@ export default function MyAppointments() {
               <th scope="col">Doctor</th>
               <th scope="col">Date and time</th>
               <th scope="col">Location</th>
-              <th scope="col">Reason</th>
               <th scope="col">Queue</th>
               <th scope="col">Status</th>
-              <th scope="col">Actions</th>
+              <th scope="col" className="tbl-end">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -121,28 +120,26 @@ export default function MyAppointments() {
                     <div className="tbl-sub">{appointment.appointmentTime}</div>
                   </td>
                   <td>{appointment.location}</td>
-                  <td className="tbl-reason">
-                    {appointment.reason}
-                    {appointment.prescription && <span className="tbl-rx"><Pill size={13}/>{appointment.prescription}</span>}
-                  </td>
                   <td>
                     {appointment.queueNumber
                       ? <><div>#{appointment.queueNumber}</div><div className="tbl-sub">{appointment.queueStatus}</div></>
                       : <span className="tbl-sub">Not queued</span>}
                   </td>
-                  <td><span className={`pill ${state}`}><Icon size={12}/>{appointment.status}</span></td>
                   <td>
-                    <div className="tbl-actions">
-                      {queueable && <Link to={`/live-queue/${appointment._id}`} className="tbl-act primary"><Radio size={13}/>Live queue</Link>}
-                      {changeable && <button type="button" className="tbl-act" onClick={() => { setEditing(editing === appointment._id ? null : appointment._id); setForm({ appointmentDate: '', appointmentTime: '' }); }}><CalendarClock size={13}/>Reschedule</button>}
-                      {changeable && <button type="button" className="tbl-act danger" onClick={() => cancel(appointment._id)}><XCircle size={13}/>Cancel</button>}
-                      {!queueable && !changeable && <span className="tbl-sub">No action left</span>}
-                    </div>
+                    <span className={`pill ${state}`}><Icon size={12}/>{appointment.status}</span>
+                    {appointment.prescription && <span className="tbl-rx"><Pill size={13}/>{appointment.prescription}</span>}
+                  </td>
+                  <td className="tbl-end">
+                    <RowMenu label={`Actions for the ${appointment.appointmentDate} appointment with ${appointment.doctorName}`} items={[
+                      ...(queueable ? [{ label: 'Live queue', icon: <Radio size={14}/>, to: `/live-queue/${appointment._id}` }] : []),
+                      ...(changeable ? [{ label: 'Reschedule', icon: <CalendarClock size={14}/>, onClick: () => { setEditing(editing === appointment._id ? null : appointment._id); setForm({ appointmentDate: '', appointmentTime: '' }); } }] : []),
+                      ...(changeable ? [{ label: 'Cancel', icon: <XCircle size={14}/>, tone: 'danger', onClick: () => cancel(appointment._id) }] : []),
+                    ]}/>
                   </td>
                 </tr>
 
                 {editing === appointment._id && <tr className="tbl-edit">
-                  <td colSpan={7}>
+                  <td colSpan={6}>
                     <form onSubmit={reschedule} className="tbl-form">
                       <label>New date
                         <input required min={localDate()} type="date" value={form.appointmentDate} onChange={(event) => setForm({ appointmentDate: event.target.value, appointmentTime: '' })}/>

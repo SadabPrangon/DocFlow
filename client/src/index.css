@@ -713,10 +713,8 @@ input:focus, select:focus, textarea:focus {
 .tbl-name { font-weight: 700; color: var(--ink); }
 .tbl-sub { color: var(--muted); }
 .tbl-when { white-space: nowrap; }
-.tbl-reason { min-width: 11rem; max-width: 18rem; }
 .tbl-rx { display: flex; align-items: flex-start; gap: .3rem; margin-top: .35rem; color: var(--success); }
 .tbl-rx svg { flex: none; margin-top: .15rem; }
-.tbl-actions { display: flex; gap: .35rem; white-space: nowrap; }
 .tbl-act { display: inline-flex; align-items: center; gap: .3rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .35rem .55rem; font-weight: 600; color: var(--ink); }
 .tbl-act:hover { border-color: var(--brand-line); background: var(--brand-tint); color: var(--brand); }
 .tbl-act.primary { border-color: var(--brand); background: var(--brand); color: #fff; }
@@ -733,3 +731,15 @@ input:focus, select:focus, textarea:focus {
 .pill { display: inline-flex; align-items: center; gap: .25rem; border-radius: 8px; padding: .15rem .45rem; font-weight: 700; white-space: nowrap; background: var(--warning-tint); color: var(--warning-ink); }
 .pill.ok { background: var(--success-tint); color: var(--success); }
 .pill.bad { background: var(--danger-tint); color: var(--danger); }
+
+/* Row actions sit behind a dots button. The panel is fixed to the viewport
+   because the table itself scrolls and would otherwise clip it. */
+.tbl-end { width: 1%; text-align: right; white-space: nowrap; }
+.rowmenu-button { display: inline-flex; align-items: center; justify-content: center; height: 28px; width: 28px; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--muted); }
+.rowmenu-button:hover, .rowmenu-button.open { border-color: var(--line); background: var(--surface); color: var(--ink); }
+.rowmenu-list { position: fixed; z-index: 60; min-width: 11rem; transform: translateX(-100%); border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .25rem; box-shadow: 0 18px 45px rgba(16, 24, 40, .14); }
+.rowmenu-item { display: flex; width: 100%; align-items: center; gap: .5rem; border: 0; border-radius: 8px; background: none; padding: .45rem .55rem; text-align: left; font-weight: 600; color: var(--ink); }
+.rowmenu-item.active { background: var(--brand-tint); color: var(--brand); }
+.rowmenu-item.danger { color: var(--danger); }
+.rowmenu-item.danger.active { background: var(--danger-tint); color: var(--danger); }
+.dark-mode .rowmenu-button:hover, .dark-mode .rowmenu-button.open, .dark-mode .rowmenu-list { border-color: var(--elevated); background: var(--elevated); }
