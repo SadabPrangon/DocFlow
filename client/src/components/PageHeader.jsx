@@ -1,4 +1,4 @@
-import { ArrowLeft, Bell, Bot, CalendarDays, ChevronDown, ChevronRight, FileHeart, LayoutDashboard, LockKeyhole, LogOut, Menu, MessageSquare, Moon, PanelLeftClose, PanelLeftOpen, LifeBuoy, Radio, SlidersHorizontal, Stethoscope, Sun, UserRound, X } from 'lucide-react';
+import { ArrowLeft, UsersRound, Bell, Bot, CalendarDays, ChevronDown, ChevronRight, FileHeart, LayoutDashboard, LockKeyhole, LogOut, Menu, MessageSquare, Moon, PanelLeftClose, PanelLeftOpen, LifeBuoy, Radio, SlidersHorizontal, Stethoscope, Sun, UserRound, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clearAuth, dashboardFor, getUser } from '../lib/auth';
@@ -14,7 +14,7 @@ const patientNav = [
   ['/ai-recommendation', Bot, 'Care assistant'],
 ];
 const doctorNav = [['/doctor-dashboard', LayoutDashboard, 'Dashboard'], ['/clinical-workspace', FileHeart, 'Clinical workspace'], ['/messages', MessageSquare, 'Messages'], ['/availability', CalendarDays, 'Availability']];
-const adminNav = [['/admin-dashboard', LayoutDashboard, 'Dashboard'], ['/reports', FileHeart, 'Reports'], ['/operations', CalendarDays, 'Operations']];
+const adminNav = [['/admin-dashboard', LayoutDashboard, 'Dashboard'], ['/users', UsersRound, 'Users'], ['/reports', FileHeart, 'Reports'], ['/operations', CalendarDays, 'Operations']];
 const receptionistNav = [['/receptionist-dashboard', LayoutDashboard, 'Dashboard'], ['/operations', CalendarDays, 'Operations']];
 
 export default function PageHeader({ title, backTo }) {

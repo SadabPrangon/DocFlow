@@ -794,3 +794,17 @@ input:focus, select:focus, textarea:focus {
 .leave-button:disabled { opacity: .5; }
 .leave-form .cons-hint { align-self: center; }
 .dark-mode .leave-form input { border-color: var(--elevated); background: var(--elevated); }
+
+/* Creating a staff account is a rare, deliberate act, so its form opens above
+   the list rather than sitting there taking space. */
+.staff-form { margin-top: 1rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 1.1rem 1.2rem; }
+.staff-grid { display: grid; gap: .75rem; margin-top: .9rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.staff-grid label { display: flex; flex-direction: column; gap: .3rem; font-weight: 600; color: var(--muted); }
+.staff-grid input { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .55rem .7rem; color: var(--ink); }
+.staff-grid .dd-button { min-width: 100%; }
+.staff-submit { margin-top: .9rem; }
+.staff-tally { display: block; margin-top: .6rem; }
+.dark-mode .staff-form, .dark-mode .staff-grid input { border-color: var(--elevated); }
+.dark-mode .staff-grid input { background: var(--elevated); }
+@media (max-width: 900px) { .staff-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .staff-grid { grid-template-columns: 1fr; } }

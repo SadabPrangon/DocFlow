@@ -11,6 +11,7 @@ import LiveQueue from './pages/LiveQueue';
 import Profile from './pages/Profile';
 import AIRecommendation from './pages/AIRecommendation';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminUsers from './pages/AdminUsers';
 import DoctorDashboard from './pages/DoctorDashboard';
 import ReceptionistDashboard from './pages/ReceptionistDashboard';
 import ForgotPasswordFlow from './pages/ForgotPasswordFlow';
@@ -58,6 +59,7 @@ export default function App(){return <Routes>
   <Route path="/notification-settings" element={guard(['patient'],<NotificationSettings/>)}/>
   <Route path="/ai-recommendation" element={guard(['patient'],<AIRecommendation/>)}/>
   <Route path="/admin-dashboard" element={guard(['admin'],<AdminDashboard/>)}/>
+  <Route path="/users" element={guard(['admin'],<AdminUsers/>)}/>
   <Route path="/doctor-dashboard" element={guard(['doctor'],<DoctorDashboard/>)}/>
   <Route path="/receptionist-dashboard" element={guard(['receptionist'],<ReceptionistDashboard/>)}/>
   <Route path="*" element={<Home/>}/>

@@ -38,7 +38,11 @@ async function mockApi(page) {
     else if (path.includes('/ai/recommend')) body = { success:true, conversationId:'conv-1', title:'skin rash', source:'qa', urgent:false, specialty:'Dermatology', reply:'You should see a Dermatology doctor for a spreading rash.', recommendations:[{doctorId:'doctor-1',name:'Dr QA',specialty:'Dermatology',location:'QA Clinic',fee:500,date:'2026-08-24',day:'Monday',time:'9:00 AM',why:'Earliest dermatology slot.'}] };
     else if (path.includes('/notifications')) body = { success:true, notifications:[], unread:0 };
     else if (path.includes('/users/admin/stats')) body = { success:true, stats:{patients:2,doctors:2,receptionists:1,appointments:3} };
-    else if (path.includes('/users/admin/users')) body = { success:true, users:[] };
+    else if (path.includes('/users/admin/users')) body = { success:true, users:[
+      {id:'u1',name:'QA Patient',email:'patient@qa.test',role:'patient',isActive:true},
+      {id:'u2',name:'QA Doctor',email:'doctor@qa.test',role:'doctor',isActive:true},
+      {id:'u3',name:'QA Reception',email:'reception@qa.test',role:'receptionist',isActive:false},
+    ] };
     await route.fulfill({ status:200, contentType:'application/json', body:JSON.stringify(body) });
   });
 }
@@ -245,6 +249,22 @@ async function run() {
     await page.waitForSelector('.wipe');
     check((await page.locator('.wipe-note').innerText()).includes('There is no undo'), 'The admin clear says plainly that it cannot be undone', await page.locator('.wipe-note').innerText());
     check(!(await page.locator('main').innerText()).includes('audit')&&await page.locator('.sidebar-nav').getByRole('link',{name:'Audit log'}).count()===0, 'The audit log is no longer part of the admin screens', (await page.locator('main').innerText()).slice(0,120));
+    check(!(await page.locator('main').innerText()).includes('All users')&&!(await page.locator('main').innerText()).includes('Create staff account'), 'Accounts have left the admin dashboard', (await page.locator('main').innerText()).slice(0,160));
+    check(await page.locator('.sidebar-nav').getByRole('link',{name:'Users'}).isVisible(), 'The admin sidebar carries a users module');
+    await page.evaluate(()=>{history.pushState({},'', '/users');dispatchEvent(new PopStateEvent('popstate'))});
+    await page.waitForSelector('.tbl tbody tr');
+    check((await page.locator('.tbl th').allInnerTexts()).map(t=>t.trim()).join('|')==='Name|Email|Role|Status|Actions', 'The users module lists every account', (await page.locator('.tbl th').allInnerTexts()).join('|'));
+    check(await page.locator('.tbl tbody tr').count()===3&&(await page.locator('.pill.bad').innerText()).includes('Inactive'), 'Inactive accounts are visible as such', String(await page.locator('.tbl tbody tr').count()));
+    check(await page.locator('.tbl tbody tr',{hasText:'QA Patient'}).locator('.rowmenu-button').isDisabled(), 'A patient account is not the admin to switch off');
+    await page.locator('.tbl tbody tr',{hasText:'QA Doctor'}).locator('.rowmenu-button').click();
+    check((await page.locator('.rowmenu-item').allInnerTexts()).map(t=>t.trim()).join('|')==='Deactivate', 'A staff account can be switched off from its row', (await page.locator('.rowmenu-item').allInnerTexts()).join('|'));
+    await page.keyboard.press('Escape');
+    await page.getByRole('button',{name:'New staff account'}).click();
+    await page.waitForSelector('.staff-form');
+    check((await page.locator('.staff-grid label').allInnerTexts()).some(t=>t.startsWith('Temporary password')), 'Staff accounts are created from the users module', (await page.locator('.staff-grid label').allInnerTexts()).join('|'));
+    // Back to the dashboard, where the clear-all checks below carry on.
+    await page.evaluate(()=>{history.pushState({},'', '/admin-dashboard');dispatchEvent(new PopStateEvent('popstate'))});
+    await page.waitForSelector('.wipe');
     check(await page.locator('.wipe-button').isDisabled(), 'The clear button starts out of reach');
     await page.locator('.wipe-controls input').fill('delete all data');
     await page.waitForTimeout(150);
