@@ -1,6 +1,135 @@
-import { ArrowRight, Bot, CalendarDays, ClipboardList, Clock3, Plus, Sparkles, User } from 'lucide-react';
+import { ArrowRight, Bell, Bot, CalendarDays, CheckCircle2, ClipboardList, Clock3, CreditCard, MapPin, Plus, Radio, Stethoscope, TriangleAlert } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
+import api from '../lib/api';
 import { getUser } from '../lib/auth';
 
-export default function Dashboard(){const u=getUser();const cards=[['/doctors',CalendarDays,'Book appointment','Choose a doctor and preferred time.','bg-indigo-50 text-indigo-600'],['/my-appointments',ClipboardList,'Appointments','See visits, status, and live queues.','bg-emerald-50 text-emerald-600'],['/ai-recommendation',Bot,'Care assistant','Find a specialty based on symptoms.','bg-violet-50 text-violet-600'],['/profile',User,'Your profile','Keep personal and contact details current.','bg-amber-50 text-amber-600']];return <div className="min-h-screen bg-slate-100"><PageHeader title="Patient Dashboard"/><main className="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-10"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="eyebrow">Patient workspace</p><h1 className="page-title mt-2 text-3xl font-extrabold sm:text-4xl">Good to see you, {u?.name?.split(' ')[0]||'there'}.</h1><p className="mt-2 text-slate-500">Here’s everything you need to manage your care.</p></div><Link to="/doctors" className="flex w-fit items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 hover:-translate-y-0.5"><Plus size={17}/>New appointment</Link></div><section className="mt-8 overflow-hidden rounded-3xl bg-slate-950 p-6 text-white shadow-xl sm:p-8"><div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between"><div className="max-w-xl"><span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-indigo-200"><Sparkles size={14}/>Your healthcare command center</span><h2 className="mt-4 text-2xl font-bold sm:text-3xl">Care feels better when everything is in sync.</h2><p className="mt-3 text-slate-400">Book a visit, check your queue, or get help finding the right specialty.</p></div><div className="grid grid-cols-2 gap-3"><div className="rounded-2xl bg-white/8 p-4"><Clock3 className="text-indigo-300" size={20}/><p className="mt-3 text-xs text-slate-400">Queue updates</p><b className="text-lg">Live</b></div><div className="rounded-2xl bg-indigo-500 p-4"><CalendarDays size={20}/><p className="mt-3 text-xs text-indigo-100">Booking</p><b className="text-lg">24 / 7</b></div></div></div></section><div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">{cards.map(([to,I,t,d,tone])=><Link key={t} to={to} className="app-card group rounded-3xl p-6 hover:-translate-y-1 hover:border-indigo-200"><div className={`grid h-12 w-12 place-items-center rounded-2xl ${tone}`}><I size={23}/></div><h2 className="mt-5 text-lg font-bold">{t}</h2><p className="mt-2 min-h-12 text-sm leading-6 text-slate-500">{d}</p><span className="mt-5 flex items-center gap-2 text-sm font-bold text-indigo-600">Open <ArrowRight className="transition group-hover:translate-x-1" size={16}/></span></Link>)}</div></main></div>}
+const OPEN = ['Pending', 'Approved'];
+const when = (appointment) => `${appointment.appointmentDate} at ${appointment.appointmentTime}`;
+const ago = (value) => {
+  const minutes = Math.round((Date.now() - new Date(value)) / 60000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1440) return `${Math.round(minutes / 60)}h ago`;
+  return `${Math.round(minutes / 1440)}d ago`;
+};
+// Status carries an icon and a word as well as a colour, never colour alone.
+const tone = (status) => ({
+  Approved: ['ok', CheckCircle2],
+  Completed: ['ok', CheckCircle2],
+  Pending: ['warn', Clock3],
+  Cancelled: ['bad', TriangleAlert],
+  'No-show': ['bad', TriangleAlert],
+}[status] || ['warn', Clock3]);
+
+export default function Dashboard() {
+  const user = getUser();
+  const [appointments, setAppointments] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [records, setRecords] = useState({ records: [], prescriptions: [] });
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    Promise.allSettled([
+      api.get('/appointments/mine'),
+      api.get('/notifications?limit=5'),
+      api.get('/clinical/history/mine'),
+    ]).then(([a, n, c]) => {
+      if (a.status === 'fulfilled') setAppointments(a.value.data.appointments || []);
+      if (n.status === 'fulfilled') setNotifications(n.value.data.notifications || []);
+      if (c.status === 'fulfilled') setRecords({ records: c.value.data.records || [], prescriptions: c.value.data.prescriptions || [] });
+      setLoaded(true);
+    });
+  }, []);
+
+  const open = appointments.filter((item) => OPEN.includes(item.status));
+  const next = [...open].sort((a, b) => `${a.appointmentDate}${a.appointmentTime}`.localeCompare(`${b.appointmentDate}${b.appointmentTime}`))[0];
+  const inQueue = appointments.find((item) => item.status === 'Approved' && item.queueNumber != null && item.queueStatus !== 'Completed');
+  const unpaid = appointments.filter((item) => OPEN.includes(item.status) && item.paymentStatus !== 'Paid');
+  const owed = unpaid.reduce((total, item) => total + (item.fee || 0), 0);
+
+  const tiles = [
+    ['Upcoming visits', open.length, CalendarDays, '/my-appointments'],
+    ['Your queue number', inQueue ? `#${inQueue.queueNumber}` : '—', Radio, '/live-queue'],
+    ['Awaiting payment', owed ? `৳${owed}` : '—', CreditCard, '/payments'],
+    ['Prescriptions', records.prescriptions.length, ClipboardList, '/medical-records'],
+  ];
+  const shortcuts = [
+    ['/doctors', Stethoscope, 'Book appointment'],
+    ['/ai-recommendation', Bot, 'Care assistant'],
+    ['/medical-records', ClipboardList, 'Medical records'],
+    ['/payments', CreditCard, 'Payments'],
+  ];
+
+  return <div className="min-h-screen bg-slate-100">
+    <PageHeader title="Patient Dashboard"/>
+    <main className="dash">
+      <div className="dash-head">
+        <div>
+          <h1 className="dash-title">Good to see you, {user?.name?.split(' ')[0] || 'there'}.</h1>
+          <p className="dash-sub">Here is where your care stands today.</p>
+        </div>
+        <Link to="/doctors" className="dash-cta"><Plus size={15}/>New appointment</Link>
+      </div>
+
+      <section className="dash-tiles">
+        {tiles.map(([label, value, Icon, to]) => <Link key={label} to={to} className="dash-tile">
+          <span className="dash-tile-icon"><Icon size={15}/></span>
+          <b className="dash-tile-value">{loaded ? value : '·'}</b>
+          <small>{label}</small>
+        </Link>)}
+      </section>
+
+      <div className="dash-grid">
+        <section className="dash-card">
+          <h2 className="dash-card-title">Next visit</h2>
+          {next ? <>
+            <div className="dash-visit">
+              <span className="dash-visit-mark"><Stethoscope size={16}/></span>
+              <span className="dash-visit-copy">
+                <b>{next.doctorName}</b>
+                <small>{next.specialty || 'General Medicine'}</small>
+              </span>
+              {(() => { const [state, Icon] = tone(next.status); return <span className={`dash-pill ${state}`}><Icon size={12}/>{next.status}</span>; })()}
+            </div>
+            <p className="dash-meta"><CalendarDays size={13}/>{when(next)}<MapPin size={13}/>{next.location || 'DocFlow Clinic'}</p>
+
+            {inQueue && inQueue._id === next._id && <div className="dash-queue">
+              <span><small>Now serving</small><b>{inQueue.currentServing != null ? `#${inQueue.currentServing}` : 'Not started'}</b></span>
+              <span><small>Your number</small><b>#{inQueue.queueNumber}</b></span>
+              <span><small>Ahead of you</small><b>{inQueue.peopleBeforeYou ?? 0}</b></span>
+              <span><small>Estimated wait</small><b>{inQueue.estimatedWait ? `${inQueue.estimatedWait} min` : 'Soon'}</b></span>
+            </div>}
+
+            <div className="dash-actions">
+              {next.status === 'Approved' && <Link to={`/live-queue/${next._id}`} className="dash-action primary"><Radio size={14}/>Live queue</Link>}
+              <Link to="/my-appointments" className="dash-action">Manage</Link>
+              {next.paymentStatus !== 'Paid' && next.fee > 0 && <Link to="/payments" className="dash-action"><CreditCard size={14}/>Pay ৳{next.fee}</Link>}
+            </div>
+          </> : <p className="dash-empty">{loaded ? 'No upcoming visits. Book one when you need to be seen.' : 'Loading your appointments…'}</p>}
+        </section>
+
+        <section className="dash-card">
+          <h2 className="dash-card-title">Recent activity</h2>
+          {notifications.length ? <ul className="dash-feed">
+            {notifications.map((item) => <li key={item._id}>
+              <span className={`dash-feed-dot ${item.read ? '' : 'unread'}`}><Bell size={12}/></span>
+              <span className="dash-feed-copy">
+                <b>{item.title}</b>
+                <small>{item.message}</small>
+              </span>
+              <small className="dash-feed-time">{ago(item.createdAt)}</small>
+            </li>)}
+          </ul> : <p className="dash-empty">{loaded ? 'Nothing new yet.' : 'Loading…'}</p>}
+        </section>
+      </div>
+
+      <section className="dash-shortcuts">
+        {shortcuts.map(([to, Icon, label]) => <Link key={to} to={to} className="dash-shortcut">
+          <Icon size={15}/>{label}<ArrowRight size={13} className="dash-shortcut-arrow"/>
+        </Link>)}
+      </section>
+    </main>
+  </div>;
+}

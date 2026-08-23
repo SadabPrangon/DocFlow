@@ -105,10 +105,10 @@ async function run() {
     const themeSize = await page.getByRole('button',{name:/Use light appearance/}).evaluate(el=>({w:el.getBoundingClientRect().width,h:el.getBoundingClientRect().height,svgW:el.querySelector('svg').getBoundingClientRect().width}));
     check(themeSize.w===28&&themeSize.h===28&&themeSize.svgW===14, 'Top-bar icon uses 28px container and 14px glyph', JSON.stringify(themeSize));
 
-    check(await page.getByRole('link',{name:'Medical records'}).isVisible(), 'Patient sidebar exposes medical records');
-    check(await page.getByRole('link',{name:'Messages'}).isVisible(), 'Patient sidebar exposes secure messages');
-    check(await page.getByRole('link',{name:'Payments & calendar'}).isVisible(), 'Patient sidebar exposes payments and calendar');
-    check(await page.getByRole('link',{name:'Live Queue',exact:true}).isVisible(), 'Patient sidebar exposes live queue');
+    check(await page.locator('.sidebar-nav').getByRole('link',{name:'Medical records'}).isVisible(), 'Patient sidebar exposes medical records');
+    check(await page.locator('.sidebar-nav').getByRole('link',{name:'Messages'}).isVisible(), 'Patient sidebar exposes secure messages');
+    check(await page.locator('.sidebar-nav').getByRole('link',{name:'Payments & calendar'}).isVisible(), 'Patient sidebar exposes payments and calendar');
+    check(await page.locator('.sidebar-nav').getByRole('link',{name:'Live Queue',exact:true}).isVisible(), 'Patient sidebar exposes live queue');
     await page.goto(`${BASE}/live-queue`,{waitUntil:'networkidle'});
     check(await page.locator('h1').filter({hasText:'Live Queue'}).isVisible(), 'Live-queue selection workspace renders');
     check(await page.getByRole('link',{name:'Open live tracker'}).isVisible(), 'Approved queued appointment can open its live tracker');
