@@ -399,7 +399,7 @@ input:focus, select:focus, textarea:focus {
 .saas-header.collapsed .sidebar-footer .nav-pill { justify-content: center; padding-inline: 0; }
 
 /* Settings module: tabbed sections, cards whose rows put the control on the right. */
-.set-shell { width: 100%; max-width: 56rem; margin-inline: auto; padding: 1.75rem 1.5rem 3rem; }
+.set-shell { width: 100%; max-width: 56rem; margin-inline: auto; padding: 1rem 1.5rem 3rem; }
 .set-tabs { display: flex; gap: .25rem; overflow-x: auto; border-bottom: 1px solid var(--line); scrollbar-width: none; }
 .set-tabs::-webkit-scrollbar { display: none; }
 .set-tab { flex: none; border: 0; border-bottom: 2px solid transparent; border-radius: 0 !important; background: transparent; padding: .7rem .85rem; font-weight: 700; color: var(--muted); }
@@ -604,7 +604,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Patient dashboard: stat tiles, the next visit with its queue state, activity. */
-.dash { width: 100%; max-width: 72rem; margin-inline: auto; padding: 1.5rem 1.5rem 2.5rem; }
+.dash { width: 100%; max-width: 72rem; margin-inline: auto; padding: 1rem 1.5rem 2.5rem; }
 .dash-head { margin-bottom: .25rem; }
 .dash-title { font-weight: 800; color: var(--ink); }
 .dash-sub { margin-top: .2rem; color: var(--muted); }
@@ -665,3 +665,10 @@ input:focus, select:focus, textarea:focus {
   .dash { padding-inline: 1rem; }
   .dash-tiles, .dash-queue { grid-template-columns: 1fr 1fr; }
 }
+
+/* The heading these pages used to open with is gone, so their generous top
+   padding and the first block's top margin now only leave a gap. Scoped to the
+   utility class the pages actually carry, so the purpose-built mains that set
+   their own padding are untouched. */
+.saas-header ~ main.py-10 { padding-top: 1rem; }
+.saas-header ~ main.py-10 > *:first-child { margin-top: 0 !important; }
