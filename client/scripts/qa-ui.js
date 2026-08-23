@@ -197,10 +197,10 @@ async function run() {
     await page.waitForTimeout(200);
     check(await minutes.inputValue()==='45', 'A field left empty falls back to the length that was set', await minutes.inputValue());
     check(!(await page.locator('main').innerText()).includes('Availability updated'), 'The schedule page carries no confirmation banner');
-    check(await page.getByRole('button',{name:/Save/}).count()===1&&(await page.locator('.sched-head').innerText()).includes('Save schedule'), 'The schedule saves from a button in its own header', await page.locator('.sched-head').innerText());
-    await page.locator('.sched-button').click();
+    check(await page.locator('.sched-button').count()===2&&(await page.locator('.sched-head').allInnerTexts()).every(text=>text.includes('Save schedule')), 'Both schedule cards save from their own header', (await page.locator('.sched-head').allInnerTexts()).join(' | '));
+    await page.locator('.sched-button').last().click();
     await page.waitForTimeout(250);
-    check((await page.locator('.sched-button').innerText()).trim()==='Saved', 'The save button reports back instead of a banner', await page.locator('.sched-button').innerText());
+    check((await page.locator('.sched-button').last().innerText()).trim()==='Saved', 'The save button reports back instead of a banner', await page.locator('.sched-button').last().innerText());
     await page.evaluate(()=>{localStorage.setItem('user',JSON.stringify({id:'admin-1',name:'QA Admin',email:'admin@qa.test',role:'admin'}));history.pushState({},'', '/reports');dispatchEvent(new PopStateEvent('popstate'))});
     await page.waitForTimeout(300);
     check((await page.locator('.app-topbar h2').innerText()).trim()==='Reports', 'Admin reporting workspace renders', `${page.url()} — ${(await page.locator('body').innerText()).slice(0,120)}`);
