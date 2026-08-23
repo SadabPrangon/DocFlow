@@ -538,3 +538,7 @@ input:focus, select:focus, textarea:focus {
   .sidebar-brand-row { border: 0; background: transparent; padding: 0; }
 }
 .sidebar-footer { display: flex; flex-direction: column; gap: .25rem; }
+
+/* The page title in the topbar sits at body size and normal weight. It comes after
+   the heading rule above, which would otherwise hold every h2 at the heading size. */
+.app-topbar h2 { font-size: var(--text-body) !important; font-weight: 400; letter-spacing: normal; }
