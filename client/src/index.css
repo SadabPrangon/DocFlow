@@ -180,12 +180,12 @@ input:focus, select:focus, textarea:focus {
   top: 0;
   z-index: 35;
   display: flex;
-  min-height: 72px;
+  min-height: var(--topbar-h);
   align-items: center;
   gap: 1rem;
   border-bottom: 1px solid rgba(229, 233, 242, .92);
   background: rgba(255, 255, 255, .88);
-  padding: .75rem 2rem;
+  padding: .5rem 1.5rem;
   backdrop-filter: blur(18px);
 }
 .topbar-eyebrow { color: #8d8d8d; font-size: .625rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
@@ -298,14 +298,14 @@ input:focus, select:focus, textarea:focus {
   .sidebar-mobile .brand-mark { height: 28px; width: 28px; border-radius: .5rem; }
   .mobile-menu { display: none; }
   .saas-header.mobile-open .mobile-menu { display: flex; }
-  .app-topbar { position: relative; min-height: 62px; padding: .65rem 1rem; }
+  .app-topbar { position: relative; min-height: var(--topbar-h); padding: .5rem 1rem; }
   .topbar-profile-copy, .app-topbar .topbar-eyebrow { display: none; }
 }
 
 /* Care assistant: a centred conversation column with a pinned composer, sized so
    the transcript scrolls inside the page instead of the whole page scrolling.
    main itself carries the sidebar offset, so the column lives one level in. */
-.chat-shell { display: flex; height: calc(100dvh - 72px); }
+.chat-shell { display: flex; height: calc(100dvh - var(--topbar-h)); }
 .chat-main { display: flex; min-width: 0; flex: 1; flex-direction: column; }
 .chat-column { width: 100%; max-width: 48rem; margin-inline: auto; padding-inline: 1.5rem; }
 .chat-scroll { flex: 1; overflow-y: auto; scrollbar-width: thin; }
@@ -353,7 +353,7 @@ input:focus, select:focus, textarea:focus {
 .dark-mode .chat-composer textarea { background: transparent; color: var(--ink); }
 
 @media (max-width: 767px) {
-  .chat-shell { height: calc(100dvh - 62px - 52px); }
+  .chat-shell { height: calc(100dvh - var(--topbar-h) - 52px); }
   .chat-column { padding-inline: 1rem; }
   .chat-starters { grid-template-columns: 1fr; }
   .chat-bubble { max-width: 86%; }
@@ -499,10 +499,13 @@ input:focus, select:focus, textarea:focus {
 /* App shell: the content area is an inset panel floating on a gutter, with the
    topbar forming its head. Only wrappers that actually contain the sidebar are
    reframed, so the three centred auth pages keep their full-bleed background. */
-:root { --gutter: 12px; --shell: #e8ebef; }
+:root { --gutter: 12px; --shell: #e8ebef; --topbar-h: 56px; }
 .dark-mode { --shell: #0b0b0b; }
 
-.bg-slate-100:has(> .saas-header) { background-color: var(--shell) !important; }
+/* The gutter is padding on the wrapper, not margins on the panel: a top margin on
+   the first child collapses through a wrapper that has no padding, which shifted
+   the whole page down and left every screen with a 12px scrollbar. */
+.bg-slate-100:has(> .saas-header) { background-color: var(--shell) !important; padding: var(--gutter) 0; }
 .saas-header { border-right: 0; background: transparent; backdrop-filter: none; }
 .sidebar-brand-row { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .5rem .55rem; }
 
@@ -512,14 +515,13 @@ input:focus, select:focus, textarea:focus {
   margin-right: var(--gutter) !important;
 }
 .saas-header.collapsed ~ * { width: calc(100% - 82px - var(--gutter) * 2); margin-left: calc(82px + var(--gutter)) !important; }
-.app-topbar { top: var(--gutter); margin-top: var(--gutter); border-radius: 8px 8px 0 0; background: var(--surface); }
+.app-topbar { top: var(--gutter); border-radius: 8px 8px 0 0; background: var(--surface); }
 .saas-header ~ *:not(.app-topbar) {
-  min-height: calc(100dvh - 72px - var(--gutter) * 2);
-  margin-bottom: var(--gutter) !important;
+  min-height: calc(100dvh - var(--topbar-h) - var(--gutter) * 2);
   border-radius: 0 0 8px 8px;
   background: var(--canvas);
 }
-.chat-shell { height: calc(100dvh - 72px - var(--gutter) * 2); }
+.chat-shell { height: calc(100dvh - var(--topbar-h) - var(--gutter) * 2); }
 
 .dark-mode .saas-header { border-color: transparent; background: transparent; }
 .dark-mode .app-topbar { background: var(--surface); }
