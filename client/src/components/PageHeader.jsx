@@ -77,7 +77,7 @@ export default function PageHeader({ title, backTo }) {
     </div>
   </aside>
   <header className="app-topbar">
-    <div className="min-w-0"><p className="topbar-eyebrow">{user?.role || 'Workspace'}</p><h2 className="truncate text-lg font-extrabold tracking-tight text-slate-900">{title}</h2></div>
+    <div className="min-w-0"><h2 className="truncate text-lg font-extrabold tracking-tight text-slate-900">{title}</h2></div>
     <div className="ml-auto flex items-center gap-2">
       <button onClick={() => setDark(value => !value)} className="topbar-button" aria-label={dark ? 'Use light appearance' : 'Use dark appearance'} title={dark ? 'Use light appearance' : 'Use dark appearance'}>{dark ? <Sun size={18}/> : <Moon size={18}/>}</button>
       <div className="profile-menu-wrap">
