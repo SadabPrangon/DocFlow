@@ -395,3 +395,22 @@ input:focus, select:focus, textarea:focus {
 @media (max-width: 1023px) {
   .chat-history { display: none; }
 }
+
+/* Settings pinned to the foot of the sidebar, plus the settings page rows. */
+.sidebar-footer { margin-top: auto; border-top: 1px solid var(--line); padding-top: .7rem; }
+.sidebar-footer .nav-pill { width: 100%; padding: .75rem .8rem; }
+.saas-header.collapsed .sidebar-footer .nav-pill { justify-content: center; padding-inline: 0; }
+.dark-mode .sidebar-footer { border-color: var(--line); }
+.settings-theme { display: inline-flex; align-items: center; gap: .4rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .5rem .8rem; font-weight: 700; color: var(--muted); }
+.settings-theme:hover { border-color: var(--brand-line); color: var(--brand); }
+.settings-theme.active { border-color: var(--brand); background: var(--brand-tint); color: var(--brand); }
+.settings-row { display: flex; align-items: center; gap: .75rem; border-radius: 8px; padding: .8rem .75rem; }
+.settings-row:hover { background: var(--brand-tint); }
+.settings-row-mark { display: grid; height: 30px; width: 30px; flex: none; place-items: center; border-radius: 8px; background: var(--accent-tint); color: var(--accent-dark); }
+.settings-row-copy { display: grid; min-width: 0; gap: .15rem; }
+.settings-row-copy b { color: var(--ink); }
+.settings-row-copy small { color: var(--muted); line-height: 1.5; }
+.settings-row-arrow { margin-left: auto; flex: none; color: var(--muted); }
+.dark-mode .settings-theme { border-color: var(--line); background: var(--surface); }
+.dark-mode .settings-theme.active { border-color: var(--brand); background: var(--brand-tint); color: var(--brand); }
+.dark-mode .settings-row-mark { background: var(--accent-tint); color: var(--accent); }

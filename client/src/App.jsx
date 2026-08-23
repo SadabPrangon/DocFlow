@@ -24,6 +24,7 @@ import Payments from './pages/Payments';
 import Reports from './pages/Reports';
 import Operations from './pages/Operations';
 import NotificationSettings from './pages/NotificationSettings';
+import Settings from './pages/Settings';
 
 const guard = (roles, element) => <ProtectedRoute roles={roles}>{element}</ProtectedRoute>;
 
@@ -44,6 +45,7 @@ export default function App(){return <Routes>
   <Route path="/live-queue/:appointmentId" element={guard(['patient'],<LiveQueue/>)}/>
   <Route path="/profile" element={guard(['patient'],<Profile/>)}/>
   <Route path="/security" element={guard(['patient','admin','doctor','receptionist'],<Security/>)}/>
+  <Route path="/settings" element={guard(['patient','admin','doctor','receptionist'],<Settings/>)}/>
   <Route path="/availability" element={guard(['doctor'],<Availability/>)}/>
   <Route path="/audit" element={guard(['admin'],<Audit/>)}/>
   <Route path="/medical-records" element={guard(['patient'],<MedicalRecords/>)}/>
