@@ -27,6 +27,7 @@ async function mockApi(page) {
     else if (path.includes('/clinical/history/mine')) body = { success:true, records:[], prescriptions:[] };
     else if (path.includes('/payments/mine')) body = { success:true, payments:[] };
     else if (path.includes('/appointments/reports/summary')) body = { success:true, report:{byStatus:[],byDoctor:[],revenue:{total:0,count:0}} };
+    else if (path.includes('/checkout')) body = { success:true, provider:'sslcommerz', checkoutUrl:'https://sandbox.sslcommerz.com/EasyCheckOut/qa' };
     else if (path.includes('/availability')) body = { success:true, date:'2026-08-26', timezone:'Asia/Dhaka', slots:[], next:{serial:2,time:'7:05 PM',of:24} };
     else if (path.includes('/users/me/availability')) body = { success:true, message:'Availability updated.', availability:{timezone:'Asia/Dhaka',slotDuration:45,weekly:Array.from({length:7},(_,day)=>({day,enabled:day>0&&day<6,start:'09:00',end:'17:00'})),unavailableDates:[],overrides:[]} };
     else if (path.includes('/auth/me')) body = { success:true, user:{name:'QA Doctor',email:'doctor@qa.test',role:'doctor',availability:{weekly:[],overrides:[]}} };
@@ -146,6 +147,10 @@ async function run() {
     check(await page.locator('form select').count()===1, 'The patient is not offered a time to pick', String(await page.locator('form select').count()));
     check(!(await page.getByRole('button',{name:/Confirm/}).isDisabled()), 'A date with a free place enables the booking');
     check(await page.locator('form textarea').count()===0, 'Booking does not ask the patient for a reason', String(await page.locator('form textarea').count()));
+    check((await page.getByRole('button',{name:/Confirm/}).innerText()).trim()==='Confirm Appointment', 'A cash booking just confirms', await page.getByRole('button',{name:/Confirm/}).innerText());
+    await page.selectOption('form select','online');
+    await page.waitForTimeout(150);
+    check((await page.getByRole('button',{name:/Confirm/}).innerText()).trim()==='Confirm and pay', 'Choosing online payment says the booking will go on to pay', await page.getByRole('button',{name:/Confirm/}).innerText());
     await page.goto(`${BASE}/medical-records`,{waitUntil:'networkidle'});
     check((await page.locator('.app-topbar h2').innerText()).trim()==='Medical Records', 'Medical-record workspace renders');
     await page.goto(`${BASE}/payments`,{waitUntil:'networkidle'});
