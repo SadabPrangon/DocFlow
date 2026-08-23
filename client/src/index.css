@@ -541,4 +541,4 @@ input:focus, select:focus, textarea:focus {
 
 /* The page title in the topbar sits at body size and normal weight. It comes after
    the heading rule above, which would otherwise hold every h2 at the heading size. */
-.app-topbar h2 { font-size: var(--text-body) !important; font-weight: 400; letter-spacing: normal; }
+.app-topbar h2 { font-size: var(--text-body) !important; font-weight: 700; letter-spacing: normal; }
