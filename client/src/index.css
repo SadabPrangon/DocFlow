@@ -786,3 +786,11 @@ input:focus, select:focus, textarea:focus {
 .wipe-button:disabled { opacity: .5; }
 .dark-mode .wipe { border-color: var(--danger); }
 .dark-mode .wipe-controls input { border-color: var(--danger); background: var(--elevated); }
+.leave-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .75rem; margin-top: 1.25rem; }
+.leave-form label { display: flex; flex-direction: column; gap: .3rem; font-weight: 600; color: var(--muted); }
+.leave-form input { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .55rem .7rem; color: var(--ink); }
+.leave-button { border: 1px solid var(--brand); border-radius: 8px; background: var(--brand); padding: .55rem 1.1rem; font-weight: 700; color: #fff; }
+.leave-button:hover:not(:disabled) { border-color: var(--brand-dark); background: var(--brand-dark); }
+.leave-button:disabled { opacity: .5; }
+.leave-form .cons-hint { align-self: center; }
+.dark-mode .leave-form input { border-color: var(--elevated); background: var(--elevated); }

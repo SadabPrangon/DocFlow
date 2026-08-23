@@ -196,6 +196,16 @@ async function run() {
     await page.locator('.cons-label').click();
     await page.waitForTimeout(200);
     check(await minutes.inputValue()==='45', 'A field left empty falls back to the length that was set', await minutes.inputValue());
+    const leaveCard=page.locator('section').nth(1);
+    check((await leaveCard.locator('h2').innerText()).trim()==='Leave and holidays', 'The second card is about leave', await leaveCard.locator('h2').innerText());
+    check(await leaveCard.locator('input[type=checkbox]').count()===0&&!(await leaveCard.innerText()).includes('Special hours'), 'Leave is the only thing that card does now', (await leaveCard.innerText()).slice(0,120));
+    check(await page.locator('.leave-button').isDisabled(), 'Applying for leave needs a date first');
+    await leaveCard.locator('input[type=date]').first().fill('2026-09-10');
+    await leaveCard.locator('input[type=date]').nth(1).fill('2026-09-12');
+    await page.locator('.leave-button').click();
+    await page.waitForTimeout(200);
+    const booked=(await leaveCard.locator('.space-y-2 > div').allInnerTexts()).map(t=>t.split('\n')[0].trim());
+    check(booked.length===3&&booked[0].startsWith('2026-09-10')&&booked[2].startsWith('2026-09-12'), 'A run of dates books one closed day each', booked.join(' | '));
     check(!(await page.locator('main').innerText()).includes('Availability updated'), 'The schedule page carries no confirmation banner');
     check(await page.locator('.sched-button').count()===2&&(await page.locator('.sched-head').allInnerTexts()).every(text=>text.includes('Save schedule')), 'Both schedule cards save from their own header', (await page.locator('.sched-head').allInnerTexts()).join(' | '));
     await page.locator('.sched-button').last().click();
