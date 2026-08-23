@@ -713,8 +713,6 @@ input:focus, select:focus, textarea:focus {
 .tbl-name { font-weight: 700; color: var(--ink); }
 .tbl-sub { color: var(--muted); }
 .tbl-when { white-space: nowrap; }
-.tbl-rx { display: flex; align-items: flex-start; gap: .3rem; margin-top: .35rem; color: var(--success); }
-.tbl-rx svg { flex: none; margin-top: .15rem; }
 .tbl-act { display: inline-flex; align-items: center; gap: .3rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .35rem .55rem; font-weight: 600; color: var(--ink); }
 .tbl-act:hover { border-color: var(--brand-line); background: var(--brand-tint); color: var(--brand); }
 .tbl-act.primary { border-color: var(--brand); background: var(--brand); color: #fff; }

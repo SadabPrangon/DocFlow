@@ -114,7 +114,8 @@ async function run() {
     check(await page.getByRole('link',{name:'Open live tracker'}).isVisible(), 'Approved queued appointment can open its live tracker');
     await page.goto(`${BASE}/my-appointments`,{waitUntil:'networkidle'});
     await page.waitForSelector('.tbl tbody tr');
-    check((await page.locator('.tbl th').allInnerTexts()).map(t=>t.trim()).join('|')==='Doctor|Date and time|Location|Queue|Status|Actions', 'Appointments render as a table, not cards');
+    check((await page.locator('.tbl th').allInnerTexts()).map(t=>t.trim()).join('|')==='Doctor|Date and time|Queue|Status|Actions', 'Appointments render as a table, not cards');
+    check(await page.locator('.tbl th').last().evaluate(el=>el.getBoundingClientRect().width>0&&el.querySelector('.sr-only').getBoundingClientRect().width<=1), 'Actions column keeps a screen-reader name but no visible label');
     check(await page.locator('main article').count()===0, 'No appointment card survives beside the table');
     const apptRow = (await page.locator('.tbl tbody tr').first().innerText()).split(/\s+/).join(' ');
     check(apptRow.includes('Dr QA')&&apptRow.includes('#7')&&apptRow.includes('Approved'), 'Appointment row carries doctor, queue number and status', apptRow);
@@ -124,7 +125,7 @@ async function run() {
     check((await page.locator('.rowmenu-item').allInnerTexts()).map(t=>t.trim()).join('|')==='Live queue|Reschedule|Cancel', 'Dots menu offers live queue, reschedule and cancel');
     await page.locator('.rowmenu-item',{hasText:'Reschedule'}).click();
     check(await page.locator('.rowmenu-list').count()===0, 'Choosing an action closes the dots menu');
-    check(await page.locator('.tbl-edit td').getAttribute('colspan')==='6', 'Reschedule opens a row spanning the whole table');
+    check(await page.locator('.tbl-edit td').getAttribute('colspan')==='5', 'Reschedule opens a row spanning the whole table');
     await page.goto(`${BASE}/medical-records`,{waitUntil:'networkidle'});
     check((await page.locator('.app-topbar h2').innerText()).trim()==='Medical Records', 'Medical-record workspace renders');
     await page.goto(`${BASE}/payments`,{waitUntil:'networkidle'});

@@ -1,4 +1,4 @@
-import { CalendarClock, CheckCircle2, Clock3, Pill, Radio, Search, TriangleAlert, XCircle } from 'lucide-react';
+import { CalendarClock, CheckCircle2, Clock3, Radio, Search, TriangleAlert, XCircle } from 'lucide-react';
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import Dropdown from '../components/Dropdown';
 import PageHeader from '../components/PageHeader';
@@ -97,10 +97,9 @@ export default function MyAppointments() {
             <tr>
               <th scope="col">Doctor</th>
               <th scope="col">Date and time</th>
-              <th scope="col">Location</th>
               <th scope="col">Queue</th>
               <th scope="col">Status</th>
-              <th scope="col" className="tbl-end">Actions</th>
+              <th scope="col" className="tbl-end"><span className="sr-only">Actions</span></th>
             </tr>
           </thead>
           <tbody>
@@ -119,7 +118,6 @@ export default function MyAppointments() {
                     <div>{appointment.appointmentDate}</div>
                     <div className="tbl-sub">{appointment.appointmentTime}</div>
                   </td>
-                  <td>{appointment.location}</td>
                   <td>
                     {appointment.queueNumber
                       ? <><div>#{appointment.queueNumber}</div><div className="tbl-sub">{appointment.queueStatus}</div></>
@@ -127,7 +125,6 @@ export default function MyAppointments() {
                   </td>
                   <td>
                     <span className={`pill ${state}`}><Icon size={12}/>{appointment.status}</span>
-                    {appointment.prescription && <span className="tbl-rx"><Pill size={13}/>{appointment.prescription}</span>}
                   </td>
                   <td className="tbl-end">
                     <RowMenu label={`Actions for the ${appointment.appointmentDate} appointment with ${appointment.doctorName}`} items={[
@@ -139,7 +136,7 @@ export default function MyAppointments() {
                 </tr>
 
                 {editing === appointment._id && <tr className="tbl-edit">
-                  <td colSpan={6}>
+                  <td colSpan={5}>
                     <form onSubmit={reschedule} className="tbl-form">
                       <label>New date
                         <input required min={localDate()} type="date" value={form.appointmentDate} onChange={(event) => setForm({ appointmentDate: event.target.value, appointmentTime: '' })}/>
