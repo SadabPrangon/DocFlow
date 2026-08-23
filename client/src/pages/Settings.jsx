@@ -1,4 +1,4 @@
-import { AlertTriangle, Bell, Download, LogOut, Moon, Palette, ShieldCheck, Sun, Trash2 } from 'lucide-react';
+import { AlertTriangle, Bell, Download, LogOut, ShieldCheck, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
@@ -38,7 +38,6 @@ export default function Settings() {
   const [password, setPassword] = useState('');
   const [confirming, setConfirming] = useState(false);
   const [prefs, setPrefs] = useState(user?.notificationPreferences || { emailReminders: true, smsReminders: false, reminderHoursBefore: 24 });
-  const [dark, setDark] = useState(() => localStorage.getItem('docflow-theme') === 'dark');
   const [note, setNote] = useState(null);
 
   const say = (text, tone = 'ok') => setNote({ text, tone });
@@ -52,12 +51,6 @@ export default function Settings() {
     }).catch(() => {});
     api.get('/auth/sessions').then(({ data }) => setSessions(data.sessions || [])).catch(() => {});
   }, []);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark-mode', dark);
-    localStorage.setItem('docflow-theme', dark ? 'dark' : 'light');
-    window.dispatchEvent(new CustomEvent('docflow-theme', { detail: dark }));
-  }, [dark]);
 
   const startEdit = () => {
     setForm({ name: user?.name || '', phone: user?.phone || '', age: user?.age || '', gender: user?.gender || '', address: user?.address || '' });
@@ -128,7 +121,7 @@ export default function Settings() {
     } catch (error) { fail(error, 'Unable to delete the account.'); }
   };
 
-  const tabs = [['profile', 'Profile'], ...(user?.role === 'patient' ? [['notifications', 'Notifications']] : []), ['security', 'Security'], ['appearance', 'Appearance']];
+  const tabs = [['profile', 'Profile'], ...(user?.role === 'patient' ? [['notifications', 'Notifications']] : []), ['security', 'Security']];
   const designation = user?.role === 'doctor' ? user?.specialty : user?.role;
 
   return <div className="min-h-screen bg-slate-100">
@@ -238,14 +231,6 @@ export default function Settings() {
         </section>
       </>}
 
-      {tab === 'appearance' && <section className="set-card">
-        <h2 className="set-card-title"><Palette size={15}/>Appearance</h2>
-        <p className="set-card-copy">Choose how DocFlow looks on this device.</p>
-        <div className="set-inline">
-          <button type="button" onClick={() => setDark(false)} className={`settings-theme ${dark ? '' : 'active'}`}><Sun size={15}/>Light</button>
-          <button type="button" onClick={() => setDark(true)} className={`settings-theme ${dark ? 'active' : ''}`}><Moon size={15}/>Dark</button>
-        </div>
-      </section>}
     </main>
   </div>;
 }

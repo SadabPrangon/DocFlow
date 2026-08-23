@@ -42,11 +42,6 @@ export default function PageHeader({ title, backTo }) {
     localStorage.setItem('docflow-theme', dark ? 'dark' : 'light');
   }, [dark]);
   useEffect(() => {
-    const sync = (event) => setDark(Boolean(event.detail));
-    window.addEventListener('docflow-theme', sync);
-    return () => window.removeEventListener('docflow-theme', sync);
-  }, []);
-  useEffect(() => {
     let active = true;
     const load = () => api.get('/notifications?limit=8').then(({ data }) => { if (active) { setNotifications(data.notifications); setUnread(data.unread); } }).catch(() => {});
     load(); const timer = setInterval(load, 30000);
