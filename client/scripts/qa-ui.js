@@ -143,6 +143,15 @@ async function run() {
     await page.evaluate(()=>{localStorage.setItem('user',JSON.stringify({id:'doctor-1',name:'QA Doctor',email:'doctor@qa.test',role:'doctor'}));history.pushState({},'', '/clinical-workspace');dispatchEvent(new PopStateEvent('popstate'))});
     await page.waitForTimeout(300);
     check(await page.getByText('Select an appointment to document care.').isVisible(), 'Doctor clinical workspace renders', `${page.url()} — ${(await page.locator('body').innerText()).slice(0,300)}`);
+    // A full navigation would re-run the init script and log back in as the patient.
+    await page.evaluate(()=>{history.pushState({},'', '/availability');dispatchEvent(new PopStateEvent('popstate'))});
+    await page.waitForSelector('.cons');
+    check((await page.locator('.cons .dd-button').innerText()).trim()==='1 hour', 'Schedule page opens on the saved consultation length', await page.locator('.cons .dd-button').innerText());
+    check((await page.locator('.cons-hint').innerText()).includes('fits 8 patients'), 'Consultation length states how many patients a day fits', await page.locator('.cons-hint').innerText());
+    await page.locator('.cons .dd-button').click();
+    check((await page.locator('.dd-option').allInnerTexts()).map(t=>t.trim()).join('|')==='15 minutes|20 minutes|30 minutes|45 minutes|1 hour|1 hour 30 min|2 hours', 'Consultation lengths run from 15 minutes to 2 hours', (await page.locator('.dd-option').allInnerTexts()).join('|'));
+    await page.locator('.dd-option',{hasText:'30 minutes'}).click();
+    check((await page.locator('.cons-hint').innerText()).includes('fits 16 patients'), 'Halving the consultation length doubles the day capacity', await page.locator('.cons-hint').innerText());
     await page.evaluate(()=>{localStorage.setItem('user',JSON.stringify({id:'admin-1',name:'QA Admin',email:'admin@qa.test',role:'admin'}));history.pushState({},'', '/reports');dispatchEvent(new PopStateEvent('popstate'))});
     await page.waitForTimeout(300);
     check((await page.locator('.app-topbar h2').innerText()).trim()==='Reports', 'Admin reporting workspace renders', `${page.url()} — ${(await page.locator('body').innerText()).slice(0,120)}`);

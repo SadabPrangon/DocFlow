@@ -743,3 +743,9 @@ input:focus, select:focus, textarea:focus {
 .rowmenu-item.danger { color: var(--danger); }
 .rowmenu-item.danger.active { background: var(--danger-tint); color: var(--danger); }
 .dark-mode .rowmenu-button:not(:disabled):hover, .dark-mode .rowmenu-button.open, .dark-mode .rowmenu-list { border-color: var(--elevated); background: var(--elevated); }
+
+/* How long the doctor spends with one patient, on both schedule surfaces. */
+.cons { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; border: 1px solid var(--line); border-radius: 8px; padding: .85rem 1rem; }
+.cons-label { font-weight: 700; color: var(--ink); }
+.cons-hint { margin-top: .15rem; color: var(--muted); }
+.dark-mode .cons { border-color: var(--elevated); }

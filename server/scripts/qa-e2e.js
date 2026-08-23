@@ -337,6 +337,12 @@ async function run() {
     const weekly=Array.from({length:7},(_,day)=>({day,enabled:true,start:'09:00',end:'12:00'}));
     response=await call('/api/users/me/availability',{method:'PUT',token:sessions.doctor2,body:{timezone:'Asia/Dhaka',slotDuration:60,weekly,unavailableDates:['2027-01-16']}});
     check(response.status===200&&response.data.availability.weekly.length===7,'Doctor can configure weekly availability');
+    response=await call('/api/users/me/availability',{method:'PUT',token:sessions.doctor2,body:{timezone:'Asia/Dhaka',slotDuration:20,weekly,unavailableDates:['2027-01-16']}});
+    const shortDay=await call(`/api/users/doctors/${doctor2._id}/availability?date=2027-03-04`);
+    check(response.status===200&&response.data.availability.slotDuration===20&&shortDay.data.slots.length===9&&shortDay.data.slots[0]==='9:00 AM'&&shortDay.data.slots[1]==='9:20 AM','Consultation length sets the spacing of bookable slots',JSON.stringify(shortDay.data.slots));
+    response=await call('/api/users/me/availability',{method:'PUT',token:sessions.doctor2,body:{timezone:'Asia/Dhaka',slotDuration:10,weekly,unavailableDates:[]}});
+    check(response.status===400,'Consultation length below the 15-minute floor is rejected',JSON.stringify(response.data));
+    response=await call('/api/users/me/availability',{method:'PUT',token:sessions.doctor2,body:{timezone:'Asia/Dhaka',slotDuration:60,weekly,unavailableDates:['2027-01-16']}});
     response=await call(`/api/users/doctors/${doctor2._id}/availability?date=2027-01-16`);
     check(response.status===200&&response.data.slots.length===0,'Blocked doctor date has no bookable slots');
     response=await call('/api/appointments',{method:'POST',token:sessions.patient4,body:{doctorId:String(doctor2._id),appointmentDate:'2020-01-01',appointmentTime:'9:00 AM',reason:'Past booking'}});
