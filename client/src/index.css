@@ -685,3 +685,19 @@ input:focus, select:focus, textarea:focus {
 .tbar-empty { margin-top: 1.25rem; border: 1px dashed var(--line); border-radius: 8px; padding: 1.25rem; text-align: center; color: var(--muted); }
 .dark-mode .tbar select, .dark-mode .tbar-clear, .dark-mode .tbar-search input { border-color: var(--elevated); background: var(--elevated); color: var(--ink); }
 @media (max-width: 600px) { .tbar-search { width: 100%; } .tbar-count { margin-left: 0; } }
+
+/* Custom listbox used in the toolbars, so the option list is ours to style. */
+.dd { position: relative; flex: none; }
+.dd-button { display: flex; align-items: center; gap: .5rem; min-width: 10.5rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .55rem .65rem; font-weight: 500; color: var(--ink); }
+.dd-button:hover { border-color: var(--brand-line); }
+.dd-button.open { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(15, 98, 254, .11); }
+.dd-value { flex: 1; overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+.dd-chevron { flex: none; color: var(--muted); transition: transform .18s ease; }
+.dd-chevron.up { transform: rotate(180deg); }
+.dd-list { position: absolute; z-index: 45; top: calc(100% + .3rem); left: 0; min-width: 100%; max-height: 15rem; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .25rem; margin: 0; list-style: none; box-shadow: 0 18px 45px rgba(16, 24, 40, .14); }
+.dd-option { display: flex; align-items: center; gap: .5rem; border-radius: 8px; padding: .45rem .55rem; white-space: nowrap; color: var(--ink); cursor: pointer; }
+.dd-option span { flex: 1; }
+.dd-option.active { background: var(--brand-tint); color: var(--brand); }
+.dd-option.selected { font-weight: 700; }
+.dark-mode .dd-button, .dark-mode .dd-list { border-color: var(--elevated); background: var(--elevated); }
+.dark-mode .dd-list { box-shadow: 0 18px 45px rgba(0, 0, 0, .5); }

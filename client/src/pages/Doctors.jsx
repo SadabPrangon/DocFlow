@@ -1,6 +1,7 @@
 import { Calendar, MapPin, Search, Stethoscope } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Dropdown from '../components/Dropdown';
 import PageHeader from '../components/PageHeader';
 import api from '../lib/api';
 
@@ -49,13 +50,18 @@ export default function Doctors() {
           <Search size={14}/>
           <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by name, specialty or place" aria-label="Search doctors"/>
         </span>
-        <select value={specialty} onChange={(event) => setSpecialty(event.target.value)} aria-label="Filter by specialty">
-          <option value="">All specialties</option>
-          {specialties.map((item) => <option key={item}>{item}</option>)}
-        </select>
-        <select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort doctors">
-          {Object.entries(SORTS).map(([key, [label]]) => <option key={key} value={key}>{label}</option>)}
-        </select>
+        <Dropdown
+          label="Filter by specialty"
+          value={specialty}
+          onChange={setSpecialty}
+          options={[{ value: '', label: 'All specialties' }, ...specialties.map((item) => ({ value: item, label: item }))]}
+        />
+        <Dropdown
+          label="Sort doctors"
+          value={sort}
+          onChange={setSort}
+          options={Object.entries(SORTS).map(([key, [label]]) => ({ value: key, label }))}
+        />
         {filtering && <button type="button" className="tbar-clear" onClick={() => { setQuery(''); setSpecialty(''); }}>Clear</button>}
         <span className="tbar-count">{loading ? 'Loading…' : `${visible.length} of ${doctors.length}`}</span>
       </div>
