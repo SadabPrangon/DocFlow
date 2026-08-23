@@ -1,6 +1,6 @@
 import { AlertTriangle, ArrowUp, Bot, CalendarDays, Clock3, MapPin, MessageSquarePlus, Stethoscope, Trash2, UserRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import api from '../lib/api';
 
@@ -10,8 +10,6 @@ const starters = [
   'Constant headache and I feel dizzy when I stand up.',
   'My baby has had a fever since last night.',
 ];
-const LAST_CHAT_KEY = 'docflow-last-chat';
-
 export default function AIRecommendation() {
   const [messages, setMessages] = useState([]);
   const [conversations, setConversations] = useState([]);
@@ -20,6 +18,7 @@ export default function AIRecommendation() {
   const [thinking, setThinking] = useState(false);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
+  const location = useLocation();
 
   const loadList = () => api.get('/ai/conversations')
     .then(({ data }) => setConversations(data.conversations || []))
@@ -30,18 +29,18 @@ export default function AIRecommendation() {
       const { data } = await api.get(`/ai/conversations/${id}`);
       setMessages(data.conversation.messages || []);
       setConversationId(id);
-      localStorage.setItem(LAST_CHAT_KEY, id);
-    } catch {
-      localStorage.removeItem(LAST_CHAT_KEY);
-    }
+    } catch { /* the chat was deleted elsewhere; the rail refreshes below */ }
   };
 
-  // Reopen wherever the patient left off, the way a chat app is expected to behave.
+  // Arriving here always starts a fresh chat, including when the sidebar entry is
+  // clicked while already on the page: React Router stamps a new key per navigation,
+  // so keying off it catches that case, which a mount-only effect would miss.
   useEffect(() => {
+    setMessages([]);
+    setConversationId(null);
+    setDraft('');
     loadList();
-    const last = localStorage.getItem(LAST_CHAT_KEY);
-    if (last) openConversation(last);
-  }, []);
+  }, [location.key]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -58,7 +57,6 @@ export default function AIRecommendation() {
     setMessages([]);
     setConversationId(null);
     setDraft('');
-    localStorage.removeItem(LAST_CHAT_KEY);
     inputRef.current?.focus();
   };
 
@@ -84,10 +82,7 @@ export default function AIRecommendation() {
         recommendations: data.recommendations || [],
         urgent: Boolean(data.urgent),
       }]);
-      if (data.conversationId) {
-        setConversationId(data.conversationId);
-        localStorage.setItem(LAST_CHAT_KEY, data.conversationId);
-      }
+      if (data.conversationId) setConversationId(data.conversationId);
       loadList();
     } catch (error) {
       setMessages((items) => [...items, {
