@@ -157,7 +157,7 @@ const updateAvailability = async (req, res) => {
     const { timezone = 'Asia/Dhaka', slotDuration = 60, weekly = [], unavailableDates = [], overrides = [] } = req.body;
     const duration = Number(slotDuration);
     const validTime = (value) => /^([01]\d|2[0-3]):[0-5]\d$/.test(String(value));
-    if (!Number.isInteger(duration) || duration < 15 || duration > 240) return res.status(400).json({ success: false, message: 'Slot duration must be 15 to 240 minutes.' });
+    if (!Number.isInteger(duration) || duration < 1 || duration > 240) return res.status(400).json({ success: false, message: 'Consultation length must be 1 to 240 minutes.' });
     if (!Array.isArray(weekly) || weekly.some((item) => !Number.isInteger(item.day) || item.day < 0 || item.day > 6 || !validTime(item.start) || !validTime(item.end) || item.start >= item.end)) {
       return res.status(400).json({ success: false, message: 'Enter a valid weekly schedule.' });
     }

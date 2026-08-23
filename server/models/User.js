@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     availability: {
       timezone: { type: String, default: 'Asia/Dhaka' },
-      slotDuration: { type: Number, default: 60, min: 15, max: 240 },
+      slotDuration: { type: Number, default: 30, min: 1, max: 240 },
       weekly: [{
         day: { type: Number, min: 0, max: 6 },
         enabled: { type: Boolean, default: true },

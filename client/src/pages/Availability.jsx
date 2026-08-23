@@ -4,7 +4,7 @@ import PageHeader from '../components/PageHeader';
 import api from '../lib/api';
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const base = { timezone: 'Asia/Dhaka', slotDuration: 60, weekly: days.map((_, day) => ({ day, enabled: day > 0 && day < 6, start: '09:00', end: '17:00' })), unavailableDates: [], overrides: [] };
+const base = { timezone: 'Asia/Dhaka', slotDuration: 30, weekly: days.map((_, day) => ({ day, enabled: day > 0 && day < 6, start: '09:00', end: '17:00' })), unavailableDates: [], overrides: [] };
 const emptyException = { date: '', enabled: true, start: '09:00', end: '17:00', breakStart: '', breakEnd: '' };
 
 export default function Availability() {

@@ -1,11 +1,9 @@
-// How long the doctor spends with one patient. The server accepts 15 to 240
-// minutes; these are the lengths a clinic actually books in.
-export const MIN_LENGTH = 15;
-export const MAX_LENGTH = 240;
-export const CONSULTATION_LENGTHS = [15, 20, 30, 45, 60, 90, 120];
+// How long the doctor spends with one patient, in whole minutes.
+export const MIN_LENGTH = 1;
+export const MAX_LENGTH = 59;
 
 export const lengthLabel = (minutes) => {
-  if (minutes < 60) return `${minutes} minutes`;
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'}`;
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
   const head = `${hours} hour${hours === 1 ? '' : 's'}`;

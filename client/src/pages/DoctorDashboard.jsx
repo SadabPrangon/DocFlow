@@ -9,7 +9,7 @@ const defaultWeekly = days.map((_, day) => ({ day, enabled: day > 0 && day < 6, 
 export default function DoctorDashboard() {
   const [items, setItems] = useState([]); const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ doctorNotes: '', prescription: '' });
-  const [schedule, setSchedule] = useState({ timezone: 'Asia/Dhaka', slotDuration: 60, weekly: defaultWeekly, unavailableDates: [], overrides: [] });
+  const [schedule, setSchedule] = useState({ timezone: 'Asia/Dhaka', slotDuration: 30, weekly: defaultWeekly, unavailableDates: [], overrides: [] });
   const [blockedDate, setBlockedDate] = useState(''); const [msg, setMsg] = useState('');
   const load = () => api.get('/appointments/doctor/mine').then((r) => setItems(r.data.appointments));
   useEffect(() => { load(); api.get('/auth/me').then(({ data }) => { const saved = data.user.availability; if (saved?.weekly?.length) setSchedule({ ...saved, overrides: saved.overrides || [] }); }); }, []);
