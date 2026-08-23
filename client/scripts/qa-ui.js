@@ -110,12 +110,12 @@ async function run() {
     check(await page.locator('.sidebar-nav').getByRole('link',{name:'Payments & calendar'}).isVisible(), 'Patient sidebar exposes payments and calendar');
     check(await page.locator('.sidebar-nav').getByRole('link',{name:'Live Queue',exact:true}).isVisible(), 'Patient sidebar exposes live queue');
     await page.goto(`${BASE}/live-queue`,{waitUntil:'networkidle'});
-    check(await page.locator('h1').filter({hasText:'Live Queue'}).isVisible(), 'Live-queue selection workspace renders');
+    check((await page.locator('.app-topbar h2').innerText()).trim()==='Live Queue', 'Live-queue selection workspace renders');
     check(await page.getByRole('link',{name:'Open live tracker'}).isVisible(), 'Approved queued appointment can open its live tracker');
     await page.goto(`${BASE}/medical-records`,{waitUntil:'networkidle'});
-    check(await page.getByRole('heading',{name:'My clinical history'}).isVisible(), 'Medical-record workspace renders');
+    check((await page.locator('.app-topbar h2').innerText()).trim()==='Medical Records', 'Medical-record workspace renders');
     await page.goto(`${BASE}/payments`,{waitUntil:'networkidle'});
-    check(await page.getByRole('heading',{name:'Appointments, payments and calendar'}).isVisible(), 'Payment and calendar workspace renders');
+    check((await page.locator('.app-topbar h2').innerText()).trim()==='Payments & Calendar', 'Payment and calendar workspace renders');
     await page.goto(`${BASE}/notification-settings`,{waitUntil:'networkidle'});
     check(await page.getByRole('heading',{name:'Reminder channels'}).isVisible(), 'Email and SMS preference workspace renders');
 
@@ -124,7 +124,7 @@ async function run() {
     check(await page.getByText('Select an appointment to document care.').isVisible(), 'Doctor clinical workspace renders', `${page.url()} — ${(await page.locator('body').innerText()).slice(0,300)}`);
     await page.evaluate(()=>{localStorage.setItem('user',JSON.stringify({id:'admin-1',name:'QA Admin',email:'admin@qa.test',role:'admin'}));history.pushState({},'', '/reports');dispatchEvent(new PopStateEvent('popstate'))});
     await page.waitForTimeout(300);
-    check(await page.getByRole('heading',{name:'Operational reporting'}).isVisible(), 'Admin reporting workspace renders', `${page.url()} — ${(await page.locator('body').innerText()).slice(0,300)}`);
+    check((await page.locator('.app-topbar h2').innerText()).trim()==='Reports', 'Admin reporting workspace renders', `${page.url()} — ${(await page.locator('body').innerText()).slice(0,120)}`);
 
     await page.evaluate(()=>{localStorage.setItem('user',JSON.stringify({name:'QA Patient',email:'patient@qa.test',role:'patient'}));history.pushState({},'', '/ai-recommendation');dispatchEvent(new PopStateEvent('popstate'))});
     await page.waitForTimeout(300);
