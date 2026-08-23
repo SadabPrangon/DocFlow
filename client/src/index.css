@@ -70,7 +70,7 @@ h1, h2, h3, h4, h5, h6,
    hand-written chrome below all sit outside that scale, so they are pinned here. */
 .rounded-full, .rounded-\[2rem\],
 button, input, select, textarea,
-.brand-mark, .nav-pill, .sidebar-toggle, .sidebar-back, .sidebar-logout,
+.brand-mark, .nav-pill, .sidebar-toggle,
 .sidebar-user, .sidebar-avatar, .topbar-profile > .sidebar-avatar,
 .mobile-icon-button, .mobile-menu-link, .topbar-button, .topbar-profile,
 .notification-dot, .profile-dropdown,
@@ -97,19 +97,19 @@ input:focus, select:focus, textarea:focus {
 /* Primary Blue */
 .bg-blue-600, .bg-indigo-600, .bg-indigo-500 { background-color: var(--brand) !important; }
 .bg-blue-700, .bg-indigo-700 { background-color: var(--brand-dark) !important; }
-.hover:bg-blue-700:hover, .hover:bg-indigo-700:hover { background-color: var(--brand-dark) !important; }
+.hover\:bg-blue-700:hover, .hover\:bg-indigo-700:hover { background-color: var(--brand-dark) !important; }
 .text-blue-600, .text-blue-700, .text-indigo-600, .text-indigo-700, .text-violet-600 { color: var(--brand) !important; }
 .bg-blue-50, .bg-blue-100, .bg-indigo-50, .bg-violet-50 { background-color: var(--brand-tint) !important; }
-.border-indigo-200, .hover:border-indigo-200:hover { border-color: #a6c8ff !important; }
+.border-indigo-200, .hover\:border-indigo-200:hover { border-color: var(--brand-line) !important; }
 .shadow-indigo-200 { --tw-shadow-color: rgba(15, 98, 254, .22) !important; }
 .from-blue-600, .from-indigo-600 { --tw-gradient-from: var(--brand) !important; }
 .to-cyan-500 { --tw-gradient-to: var(--accent) !important; }
 
 /* Healing Teal: secondary accents, including the dark hero card */
 .text-emerald-300, .text-emerald-500, .text-cyan-300 { color: #3ddbd9 !important; }
-.bg-emerald-400/15 { background-color: rgba(0, 157, 154, .18) !important; }
+.bg-emerald-400\/15 { background-color: rgba(0, 157, 154, .18) !important; }
 .text-indigo-100, .text-indigo-200, .text-indigo-300, .text-blue-100 { color: #a6c8ff !important; }
-.bg-indigo-600/30, .bg-indigo-200/40, .bg-indigo-200/30 { background-color: rgba(15, 98, 254, .22) !important; }
+.bg-indigo-600\/30, .bg-indigo-200\/40, .bg-indigo-200\/30 { background-color: rgba(15, 98, 254, .22) !important; }
 
 /* Success Green */
 .bg-green-600 { background-color: var(--success) !important; }
@@ -158,10 +158,6 @@ input:focus, select:focus, textarea:focus {
 .sidebar-nav { display: flex; flex-direction: column; gap: .25rem; margin-top: 1.75rem; }
 .sidebar-nav .nav-pill { width: 100%; padding: .75rem .8rem; }
 .sidebar-nav .nav-pill.active { box-shadow: inset 3px 0 #0f62fe; }
-.sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: .55rem; border-top: 1px solid #e8e8e8; padding-top: .9rem; }
-.sidebar-back, .sidebar-logout { display: flex; width: 100%; align-items: center; gap: .65rem; border-radius: .7rem; padding: .65rem .75rem; color: #6f6f6f; font-size: .8rem; font-weight: 700; }
-.sidebar-back:hover { background: #edf5ff; color: #0043ce; }
-.sidebar-logout:hover { background: #fff1f1; color: #da1e28; }
 .sidebar-user { display: flex; align-items: center; gap: .65rem; border-radius: .8rem; border: 1px solid #e0e0e0; padding: .65rem; }
 .sidebar-user:hover { border-color: #a6c8ff; background: #f4f8ff; }
 .sidebar-avatar { display: grid; height: 28px; width: 28px; flex: none; place-items: center; border-radius: .5rem; background: #edf5ff; color: #0f62fe; }
@@ -176,7 +172,7 @@ input:focus, select:focus, textarea:focus {
 .saas-header.collapsed .sidebar-brand { padding: 0; }
 .saas-header.collapsed .sidebar-copy, .saas-header.collapsed .sidebar-context { display: none; }
 .saas-header.collapsed .sidebar-nav { margin-top: 1.5rem; }
-.saas-header.collapsed .sidebar-nav .nav-pill, .saas-header.collapsed .sidebar-back, .saas-header.collapsed .sidebar-logout { justify-content: center; padding-inline: 0; }
+.saas-header.collapsed .sidebar-nav .nav-pill { justify-content: center; padding-inline: 0; }
 .saas-header.collapsed .sidebar-nav .nav-pill.active { box-shadow: inset 0 -3px #0f62fe; }
 .saas-header.collapsed .sidebar-user { justify-content: center; padding: .55rem; }
 .app-topbar {
@@ -246,9 +242,9 @@ input:focus, select:focus, textarea:focus {
 .dark-mode .saas-header, .dark-mode .app-topbar { border-color: var(--line); background: rgba(30, 30, 30, .94); }
 .dark-mode .app-card, .dark-mode .rounded-3xl.bg-white, .dark-mode .rounded-\[2rem\].bg-white, .dark-mode .topbar-button, .dark-mode .topbar-profile, .dark-mode .profile-dropdown, .dark-mode .sidebar-user { border-color: var(--line); background: var(--surface); color: var(--ink); }
 .dark-mode .text-slate-900, .dark-mode .text-slate-800, .dark-mode .text-slate-700, .dark-mode .page-title { color: var(--ink) !important; }
-.dark-mode .text-slate-500, .dark-mode .text-slate-600, .dark-mode .nav-pill, .dark-mode .sidebar-back, .dark-mode .sidebar-logout { color: var(--muted) !important; }
+.dark-mode .text-slate-500, .dark-mode .text-slate-600, .dark-mode .nav-pill { color: var(--muted) !important; }
 .dark-mode .sidebar-context { border-color: var(--line); background: var(--surface); }
-.dark-mode .sidebar-footer, .dark-mode .profile-dropdown > div { border-color: var(--line); }
+.dark-mode .profile-dropdown > div { border-color: var(--line); }
 .dark-mode input, .dark-mode select, .dark-mode textarea { border-color: var(--elevated) !important; background: var(--elevated); color: var(--ink); }
 .dark-mode .nav-pill:hover, .dark-mode .nav-pill.active, .dark-mode .mobile-menu-link.active { background: var(--brand-tint); color: var(--brand) !important; }
 /* Plain bg-white cards and the bg-slate-50/200 inset panels had no dark rule at
