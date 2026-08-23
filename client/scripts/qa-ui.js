@@ -145,6 +145,7 @@ async function run() {
     check(serialCard.includes('#2')&&serialCard.includes('7:05 PM'), 'Booking shows the serial and the time the system worked out', serialCard);
     check(await page.locator('form select').count()===1, 'The patient is not offered a time to pick', String(await page.locator('form select').count()));
     check(!(await page.getByRole('button',{name:/Confirm/}).isDisabled()), 'A date with a free place enables the booking');
+    check(await page.locator('form textarea').count()===0, 'Booking does not ask the patient for a reason', String(await page.locator('form textarea').count()));
     await page.goto(`${BASE}/medical-records`,{waitUntil:'networkidle'});
     check((await page.locator('.app-topbar h2').innerText()).trim()==='Medical Records', 'Medical-record workspace renders');
     await page.goto(`${BASE}/payments`,{waitUntil:'networkidle'});

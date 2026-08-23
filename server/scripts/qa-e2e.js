@@ -362,6 +362,8 @@ async function run() {
     check(response.status===201&&response.data.appointment.serial===3&&response.data.appointment.appointmentTime==='11:00 AM','Third patient fills the last place of the day',JSON.stringify({serial:response.data.appointment?.serial,time:response.data.appointment?.appointmentTime}));
     response=await call('/api/appointments',{method:'POST',token:sessions.patient1,body:{...scheduleBody,reason:'One too many'}});
     check(response.status===409&&/fully booked/i.test(response.data.message||''),'A day with no places left refuses the booking',JSON.stringify(response.data));
+    response=await call('/api/appointments',{method:'POST',token:sessions.patient4,body:{doctorId:String(doctor1._id),appointmentDate:'2027-02-08'}});
+    check(response.status===201&&response.data.appointment.reason==='','A booking without a reason is accepted',JSON.stringify(response.data.message||response.data));
     response=await call(`/api/appointments/${lastPlaceId}/cancel`,{method:'PUT',token:sessions.patient2,body:{reason:'Freeing a place'}});
     response=await call(`/api/users/doctors/${doctor2._id}/availability?date=2027-01-15`);
     check(response.data.next?.serial===3&&response.data.next?.time==='11:00 AM','A cancellation hands its place to the next patient',JSON.stringify(response.data.next));

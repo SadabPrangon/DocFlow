@@ -48,12 +48,14 @@ const enrichQueue = async (appointment) => {
 
 const createAppointment = async (req, res) => {
   try {
-    const { doctorId, appointmentDate, reason, paymentMethod = 'cash' } = req.body;
+    const { doctorId, appointmentDate, paymentMethod = 'cash' } = req.body;
+    // The patient is not asked why they are coming; the doctor takes that at the
+    // consultation. A reason sent by another client is still kept.
+    const reason = String(req.body.reason || '');
     if (!validId(doctorId)) return res.status(400).json({ success: false, message: 'Invalid doctor ID.' });
     const doctor = await User.findOne({ _id: doctorId, role: 'doctor', isActive: true });
     if (!doctor) return res.status(404).json({ success: false, message: 'Doctor not found.' });
     if (!validDate(appointmentDate) || appointmentDate < today()) return res.status(400).json({ success: false, message: 'Choose today or a future valid date.' });
-    if (typeof reason !== 'string' || !reason.trim()) return res.status(400).json({ success: false, message: 'Date and reason are required.' });
     if (reason.trim().length > 1000) return res.status(400).json({ success: false, message: 'Reason must be 1000 characters or less.' });
     if (!['cash', 'online'].includes(paymentMethod)) return res.status(400).json({ success: false, message: 'Choose a valid payment method.' });
 
