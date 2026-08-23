@@ -1,4 +1,4 @@
-import { ArrowRight, Bell, Bot, CalendarDays, CheckCircle2, ClipboardList, Clock3, CreditCard, MapPin, Plus, Radio, Stethoscope, TriangleAlert } from 'lucide-react';
+import { Bell, CalendarDays, CheckCircle2, ClipboardList, Clock3, CreditCard, MapPin, Radio, Stethoscope, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
@@ -55,22 +55,13 @@ export default function Dashboard() {
     ['Awaiting payment', owed ? `৳${owed}` : '—', CreditCard, '/payments'],
     ['Prescriptions', records.prescriptions.length, ClipboardList, '/medical-records'],
   ];
-  const shortcuts = [
-    ['/doctors', Stethoscope, 'Book appointment'],
-    ['/ai-recommendation', Bot, 'Care assistant'],
-    ['/medical-records', ClipboardList, 'Medical records'],
-    ['/payments', CreditCard, 'Payments'],
-  ];
 
   return <div className="min-h-screen bg-slate-100">
     <PageHeader title="Patient Dashboard"/>
     <main className="dash">
       <div className="dash-head">
-        <div>
-          <h1 className="dash-title">Good to see you, {user?.name?.split(' ')[0] || 'there'}.</h1>
-          <p className="dash-sub">Here is where your care stands today.</p>
-        </div>
-        <Link to="/doctors" className="dash-cta"><Plus size={15}/>New appointment</Link>
+        <h1 className="dash-title">Good to see you, {user?.name?.split(' ')[0] || 'there'}.</h1>
+        <p className="dash-sub">Here is where your care stands today.</p>
       </div>
 
       <section className="dash-tiles">
@@ -124,12 +115,6 @@ export default function Dashboard() {
           </ul> : <p className="dash-empty">{loaded ? 'Nothing new yet.' : 'Loading…'}</p>}
         </section>
       </div>
-
-      <section className="dash-shortcuts">
-        {shortcuts.map(([to, Icon, label]) => <Link key={to} to={to} className="dash-shortcut">
-          <Icon size={15}/>{label}<ArrowRight size={13} className="dash-shortcut-arrow"/>
-        </Link>)}
-      </section>
     </main>
   </div>;
 }

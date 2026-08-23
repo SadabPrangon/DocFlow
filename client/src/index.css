@@ -605,11 +605,9 @@ input:focus, select:focus, textarea:focus {
 
 /* Patient dashboard: stat tiles, the next visit with its queue state, activity. */
 .dash { width: 100%; max-width: 72rem; margin-inline: auto; padding: 1.5rem 1.5rem 2.5rem; }
-.dash-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
+.dash-head { margin-bottom: .25rem; }
 .dash-title { font-weight: 800; color: var(--ink); }
 .dash-sub { margin-top: .2rem; color: var(--muted); }
-.dash-cta { display: inline-flex; align-items: center; gap: .4rem; border-radius: 8px; background: var(--brand); padding: .55rem .85rem; font-weight: 700; color: #fff; }
-.dash-cta:hover { background: var(--brand-dark); }
 
 .dash-tiles { display: grid; gap: .75rem; margin-top: 1.25rem; grid-template-columns: repeat(4, 1fr); }
 .dash-tile { display: grid; gap: .15rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .85rem .9rem; }
@@ -654,20 +652,16 @@ input:focus, select:focus, textarea:focus {
 .dash-feed-time { flex: none; color: var(--muted); }
 .dash-empty { margin-top: .8rem; color: var(--muted); }
 
-.dash-shortcuts { display: grid; gap: .5rem; margin-top: .75rem; grid-template-columns: repeat(4, 1fr); }
-.dash-shortcut { display: flex; align-items: center; gap: .45rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: .6rem .75rem; font-weight: 700; color: var(--ink); }
-.dash-shortcut:hover { border-color: var(--brand-line); background: var(--brand-tint); color: var(--brand); }
-.dash-shortcut-arrow { margin-left: auto; color: var(--muted); }
 
-.dark-mode .dash-tile, .dark-mode .dash-card, .dark-mode .dash-shortcut { border-color: var(--line); background: var(--surface); }
+.dark-mode .dash-tile, .dark-mode .dash-card { border-color: var(--line); background: var(--surface); }
 .dark-mode .dash-queue { border-color: var(--elevated); background: var(--elevated); }
 .dark-mode .dash-visit-mark { background: var(--accent-tint); color: var(--accent); }
 
 @media (max-width: 1023px) {
   .dash-grid { grid-template-columns: 1fr; }
-  .dash-tiles, .dash-shortcuts { grid-template-columns: repeat(2, 1fr); }
+  .dash-tiles { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
   .dash { padding-inline: 1rem; }
-  .dash-tiles, .dash-shortcuts, .dash-queue { grid-template-columns: 1fr 1fr; }
+  .dash-tiles, .dash-queue { grid-template-columns: 1fr 1fr; }
 }
